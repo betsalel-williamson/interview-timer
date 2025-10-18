@@ -86,13 +86,54 @@ jobs:
         id: linter
         run: pnpm run lint
 
-      - name: Run unit tests
+      - name: Run unit tests with coverage
         id: unit-tests
-        run: pnpm run test:unit
+        run: pnpm run test:unit:coverage
+
+      - name: Report Unit Test Results
+        if: always()
+        uses: dorny/test-reporter@v2
+        with:
+          name: Unit Test Results
+          path: unit-test-results/junit.xml
+          reporter: jest-junit
+          fail-on-error: false
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
 
       - name: Build application
         id: build
         run: pnpm run build
+
+      - name: Generate Test Summary
+        if: always()
+        run: |
+          echo "### PR Validation Summary 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ job.status == 'success' && '✅ PASSED' || '❌ FAILED' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Checks:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Linting: ${{ steps.linter.outcome }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Unit Tests: ${{ steps.unit-tests.outcome }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Build: ${{ steps.build.outcome }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Coverage 📊" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          if [ -f "coverage/coverage-summary.txt" ]; then
+            cat coverage/coverage-summary.txt >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Coverage summary not available" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** \`${{ github.head_ref }}\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Comment PR with build status
         uses: actions/github-script@v6
@@ -120,7 +161,9 @@ jobs:
             - Build: ${{ steps.build.outcome }}
 
             **Commit:** \`${{ github.sha }}\`
-            **Branch:** \`${{ github.head_ref }}\``;
+            **Branch:** \`${{ github.head_ref }}\`
+
+            📊 **Test Results:** See the [Actions tab](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for detailed test reports and coverage information.`;
 
             if (botComment) {
               await github.rest.issues.updateComment({

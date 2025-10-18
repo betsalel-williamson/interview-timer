@@ -65,3 +65,68 @@ If tests expecting metronome clicks fail, ensure:
 1. The spy is created with `.mockResolvedValue()`
 2. The test properly awaits async calls like `app.toggleTimer()`
 3. The metronome is enabled before testing: `app.settings.metronomeEnabled = true`
+
+## Playwright Browser Issues
+
+### Firefox Launch Failures in CI
+
+If you encounter the error:
+
+```
+Firefox is unable to launch if the $HOME folder isn't owned by the current user.
+```
+
+This is a common issue in CI environments where the `$HOME` directory ownership doesn't match the current user.
+
+#### Solutions
+
+**For GitHub Actions:**
+The workflow file (`.github/workflows/ci.yml`) has been configured with the workaround:
+
+```yaml
+- name: Run Playwright tests
+  run: npx playwright test
+  env:
+    # Firefox workaround: Set HOME to /root to avoid ownership issues
+    HOME: /root
+```
+
+**For Local Development:**
+If you encounter this locally, you can run tests with the environment variable:
+
+```bash
+HOME=/root npx playwright test
+```
+
+**For Other CI Environments:**
+Set the `HOME` environment variable to `/root` when running Playwright tests:
+
+```bash
+export HOME=/root
+npx playwright test
+```
+
+**Alternative: Skip Firefox in CI**
+If the workaround doesn't work, you can temporarily skip Firefox tests in CI by modifying your `playwright.config.js`:
+
+```javascript
+projects: [
+  {
+    name: 'chromium',
+    use: { ...devices['Desktop Chrome'] },
+  },
+  // Skip Firefox in CI if needed
+  ...(process.env.CI
+    ? []
+    : [
+        {
+          name: 'firefox',
+          use: { ...devices['Desktop Firefox'] },
+        },
+      ]),
+  {
+    name: 'webkit',
+    use: { ...devices['Desktop Safari'] },
+  },
+];
+```

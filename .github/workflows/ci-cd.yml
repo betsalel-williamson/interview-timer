@@ -84,11 +84,25 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run unit tests
-        run: pnpm run test:unit
-
       - name: Run unit tests with coverage
         run: pnpm run test:unit:coverage
+
+      - name: Report Unit Test Results
+        if: always()
+        uses: dorny/test-reporter@v2
+        with:
+          name: Unit Test Results
+          path: unit-test-results/junit.xml
+          reporter: jest-junit
+          fail-on-error: false
+
+      - name: Upload unit test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results
+          path: unit-test-results/
+          retention-days: 30
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
@@ -97,6 +111,18 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
+
+      - name: Generate Coverage Summary
+        if: always()
+        run: |
+          echo "### Unit Test Coverage 📊" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          if [ -f "coverage/coverage-summary.txt" ]; then
+            cat coverage/coverage-summary.txt >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Coverage summary not available" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
   # E2E Tests Job
   e2e-tests:
@@ -179,6 +205,15 @@ jobs:
       - name: Run E2E tests
         run: pnpm run test:e2e
 
+      - name: Report E2E Test Results
+        if: always()
+        uses: dorny/test-reporter@v2
+        with:
+          name: E2E Test Results
+          path: playwright-test-results/junit.xml
+          reporter: jest-junit
+          fail-on-error: false
+
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
         if: always()
@@ -191,9 +226,21 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results
-          path: test-results/
+          name: playwright-test-results
+          path: playwright-test-results/
           retention-days: 30
+
+      - name: Generate E2E Test Summary
+        if: always()
+        run: |
+          echo "### E2E Test Results 🎭" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          if [ -f "playwright-test-results/junit.xml" ]; then
+            echo "E2E tests completed - see detailed results in artifacts" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "E2E test results not available" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
   # Lint Job
   lint:
