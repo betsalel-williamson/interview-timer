@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "Interview Timer",
   "builds": [
     {
       "src": "package.json",
@@ -20,11 +19,6 @@
   "outputDirectory": "dist",
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": "vite",
-  "functions": {
-    "app/api/**/*.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",
