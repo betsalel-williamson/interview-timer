@@ -13,12 +13,16 @@ vi.mock('./audio.js', () => ({
     setEnabled: vi.fn(),
     isAvailable: vi.fn().mockReturnValue(true),
     cleanup: vi.fn(),
+    startClickTesting: vi.fn().mockResolvedValue(),
+    stopClickTesting: vi.fn(),
+    startMetronome: vi.fn().mockResolvedValue(),
+    stopMetronome: vi.fn(),
     isInitialized: false,
   })),
 }));
 
 // Import after mocking
-import { multiTimerApp, createTimer } from './main.js';
+import { multiTimerApp, createTimer, audioManager } from './main.js';
 
 describe('Multi-Timer Application', () => {
   let app;
@@ -59,6 +63,8 @@ describe('Multi-Timer Application', () => {
       expect(app.settings).toEqual({
         audioEnabled: true,
         flashEnabled: true,
+        audioTestingEnabled: false,
+        metronomeEnabled: false,
       });
       expect(app.intervalId).toBeNull();
       expect(app.isInitialized).toBe(false);
@@ -381,6 +387,143 @@ describe('Multi-Timer Application', () => {
       app.destroy();
 
       expect(clearIntervalSpy).toHaveBeenCalledWith(mockIntervalId);
+    });
+  });
+
+  describe('audio testing state management', () => {
+    let app;
+
+    beforeEach(() => {
+      app = multiTimerApp();
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+      if (app) {
+        app.destroy();
+      }
+    });
+
+    it('should initialize with audio testing and metronome disabled', () => {
+      expect(app.settings.audioTestingEnabled).toBe(false);
+      expect(app.settings.metronomeEnabled).toBe(false);
+      expect(app.audioTestingIntervalId).toBeNull();
+      expect(app.audioTestingActive).toBe(false);
+      expect(app.metronomeActive).toBe(false);
+    });
+
+    it('should have startAudioTesting method', () => {
+      expect(typeof app.startAudioTesting).toBe('function');
+    });
+
+    it('should have stopAudioTesting method', () => {
+      expect(typeof app.stopAudioTesting).toBe('function');
+    });
+
+    it('should have startMetronome method', () => {
+      expect(typeof app.startMetronome).toBe('function');
+    });
+
+    it('should have stopMetronome method', () => {
+      expect(typeof app.stopMetronome).toBe('function');
+    });
+
+    it('should start audio testing when enabled', async () => {
+      const startClickTestingSpy = vi.spyOn(audioManager, 'startClickTesting');
+
+      await app.startAudioTesting();
+
+      expect(startClickTestingSpy).toHaveBeenCalled();
+      expect(app.audioTestingActive).toBe(true);
+    });
+
+    it('should stop audio testing when disabled', async () => {
+      const stopClickTestingSpy = vi.spyOn(audioManager, 'stopClickTesting');
+
+      await app.startAudioTesting();
+      await app.stopAudioTesting();
+
+      expect(stopClickTestingSpy).toHaveBeenCalled();
+      expect(app.audioTestingActive).toBe(false);
+    });
+
+    it('should handle audio testing errors gracefully', async () => {
+      const startClickTestingSpy = vi
+        .spyOn(audioManager, 'startClickTesting')
+        .mockRejectedValue(new Error('Audio testing failed'));
+
+      await app.startAudioTesting();
+
+      expect(startClickTestingSpy).toHaveBeenCalled();
+      expect(app.audioTestingActive).toBe(false);
+    });
+
+    it('should clean up audio testing on destroy', async () => {
+      const stopClickTestingSpy = vi.spyOn(audioManager, 'stopClickTesting');
+
+      await app.startAudioTesting();
+      app.destroy();
+
+      expect(stopClickTestingSpy).toHaveBeenCalled();
+    });
+
+    it('should start metronome when enabled', async () => {
+      const startMetronomeSpy = vi.spyOn(audioManager, 'startMetronome');
+
+      await app.startMetronome();
+
+      expect(startMetronomeSpy).toHaveBeenCalledWith(expect.any(Function));
+      expect(app.metronomeActive).toBe(true);
+    });
+
+    it('should stop metronome when disabled', async () => {
+      const stopMetronomeSpy = vi.spyOn(audioManager, 'stopMetronome');
+
+      await app.startMetronome();
+      await app.stopMetronome();
+
+      expect(stopMetronomeSpy).toHaveBeenCalled();
+      expect(app.metronomeActive).toBe(false);
+    });
+
+    it('should handle metronome errors gracefully', async () => {
+      const startMetronomeSpy = vi
+        .spyOn(audioManager, 'startMetronome')
+        .mockRejectedValue(new Error('Metronome failed'));
+
+      await app.startMetronome();
+
+      expect(startMetronomeSpy).toHaveBeenCalled();
+      expect(app.metronomeActive).toBe(false);
+    });
+
+    it('should clean up metronome on destroy', async () => {
+      const stopMetronomeSpy = vi.spyOn(audioManager, 'stopMetronome');
+
+      await app.startMetronome();
+      app.destroy();
+
+      expect(stopMetronomeSpy).toHaveBeenCalled();
+    });
+
+    it('should pass correct function to check for active timers', async () => {
+      const startMetronomeSpy = vi.spyOn(audioManager, 'startMetronome');
+
+      // Add a running timer
+      app.timers = [{ id: 1, status: 'running' }];
+
+      await app.startMetronome();
+
+      expect(startMetronomeSpy).toHaveBeenCalledWith(expect.any(Function));
+
+      // Test the function that was passed
+      const hasActiveTimersFunction = startMetronomeSpy.mock.calls[0][0];
+      expect(hasActiveTimersFunction()).toBe(true);
+
+      // Test with no running timers
+      app.timers = [{ id: 1, status: 'ready' }];
+      expect(hasActiveTimersFunction()).toBe(false);
     });
   });
 });

@@ -112,36 +112,44 @@ describe('AudioManager', () => {
       );
     });
 
-    it('should set oscillator frequency at different times', async () => {
+    it('should set oscillator frequency at different times for distinct alert pattern', async () => {
       await audioManager.playAlert();
 
       expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(
-        800,
+        600,
         0
       );
       expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(
+        800,
+        0.4
+      );
+      expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(
         1000,
-        0.5
+        0.8
       );
       expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(
         1200,
-        1.0
+        1.2
       );
       expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(
-        800,
-        1.5
+        1000,
+        1.6
+      );
+      expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(
+        600,
+        2.0
       );
     });
 
-    it('should configure gain envelope for 2-second duration', async () => {
+    it('should configure gain envelope for 2-second duration with emphasis', async () => {
       await audioManager.playAlert();
 
       expect(mockGainNode.gain.setValueAtTime).toHaveBeenCalledWith(0, 0);
       expect(mockGainNode.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
-        0.3,
+        0.4,
         0.1
       );
-      expect(mockGainNode.gain.setValueAtTime).toHaveBeenCalledWith(0.3, 1.9);
+      expect(mockGainNode.gain.setValueAtTime).toHaveBeenCalledWith(0.4, 1.9);
       expect(mockGainNode.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
         0,
         2.0
@@ -218,12 +226,392 @@ describe('AudioManager', () => {
     });
   });
 
-  describe('cleanup', () => {
-    it('should close audio context and reset state', async () => {
+  describe('playClickSound', () => {
+    beforeEach(async () => {
       await audioManager.initialize();
+    });
+
+    it('should create and configure oscillator for click sound', async () => {
+      await audioManager.playClickSound();
+
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
+      expect(mockAudioContext.createGain).toHaveBeenCalled();
+      expect(mockOscillator.connect).toHaveBeenCalledWith(mockGainNode);
+      expect(mockGainNode.connect).toHaveBeenCalledWith(
+        mockAudioContext.destination
+      );
+    });
+
+    it('should set oscillator frequency to 800Hz and type to sine', async () => {
+      await audioManager.playClickSound();
+
+      expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(
+        800,
+        0
+      );
+      expect(mockOscillator.type).toBe('sine');
+    });
+
+    it('should configure gain envelope for subtle metronome click duration', async () => {
+      await audioManager.playClickSound();
+
+      expect(mockGainNode.gain.setValueAtTime).toHaveBeenCalledWith(0, 0);
+      expect(mockGainNode.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
+        0.05,
+        0.005
+      );
+      expect(mockGainNode.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
+        0,
+        0.03
+      );
+    });
+
+    it('should start and stop oscillator with correct timing', async () => {
+      await audioManager.playClickSound();
+
+      expect(mockOscillator.start).toHaveBeenCalledWith(0);
+      expect(mockOscillator.stop).toHaveBeenCalledWith(0.03);
+    });
+
+    it('should not play if audio is disabled', async () => {
+      audioManager.setEnabled(false);
+
+      await audioManager.playClickSound();
+
+      expect(mockAudioContext.createOscillator).not.toHaveBeenCalled();
+    });
+
+    it('should not play if not initialized', async () => {
+      audioManager.isInitialized = false;
+
+      await audioManager.playClickSound();
+
+      expect(mockAudioContext.createOscillator).not.toHaveBeenCalled();
+    });
+
+    it('should handle play errors gracefully', async () => {
+      mockAudioContext.createOscillator.mockImplementation(() => {
+        throw new Error('Oscillator creation failed');
+      });
+
+      // Should not throw
+      await expect(audioManager.playClickSound()).resolves.toBeUndefined();
+    });
+  });
+
+  describe('startClickTesting', () => {
+    beforeEach(async () => {
+      await audioManager.initialize();
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should initialize audio context if not already initialized', async () => {
+      audioManager.isInitialized = false;
+      const initializeSpy = vi.spyOn(audioManager, 'initialize');
+
+      await audioManager.startClickTesting();
+
+      expect(initializeSpy).toHaveBeenCalled();
+    });
+
+    it('should play initial click sound', async () => {
+      const playClickSoundSpy = vi.spyOn(audioManager, 'playClickSound');
+
+      await audioManager.startClickTesting();
+
+      expect(playClickSoundSpy).toHaveBeenCalled();
+    });
+
+    it('should set up interval for subsequent clicks', async () => {
+      await audioManager.startClickTesting();
+
+      expect(audioManager.clickTestingIntervalId).toBeDefined();
+    });
+
+    it('should play click sound every second', async () => {
+      const playClickSoundSpy = vi.spyOn(audioManager, 'playClickSound');
+
+      await audioManager.startClickTesting();
+      playClickSoundSpy.mockClear(); // Clear initial call
+
+      vi.advanceTimersByTime(1000);
+      expect(playClickSoundSpy).toHaveBeenCalledTimes(1);
+
+      vi.advanceTimersByTime(1000);
+      expect(playClickSoundSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('should not start if already running', async () => {
+      await audioManager.startClickTesting();
+      const firstIntervalId = audioManager.clickTestingIntervalId;
+
+      await audioManager.startClickTesting();
+
+      expect(audioManager.clickTestingIntervalId).toBe(firstIntervalId);
+    });
+
+    it('should throw error if audio is disabled', async () => {
+      audioManager.setEnabled(false);
+
+      await expect(audioManager.startClickTesting()).rejects.toThrow(
+        'Audio is disabled'
+      );
+    });
+  });
+
+  describe('stopClickTesting', () => {
+    beforeEach(async () => {
+      await audioManager.initialize();
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should clear the click testing interval', async () => {
+      await audioManager.startClickTesting();
+      const intervalId = audioManager.clickTestingIntervalId;
+
+      audioManager.stopClickTesting();
+
+      expect(audioManager.clickTestingIntervalId).toBeNull();
+    });
+
+    it('should handle stopping when not running', () => {
+      // Should not throw
+      expect(() => audioManager.stopClickTesting()).not.toThrow();
+    });
+  });
+
+  describe('playMetronomeClick', () => {
+    beforeEach(async () => {
+      await audioManager.initialize();
+    });
+
+    it('should create and configure oscillator for metronome click', async () => {
+      await audioManager.playMetronomeClick();
+
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled();
+      expect(mockAudioContext.createGain).toHaveBeenCalled();
+      expect(mockOscillator.connect).toHaveBeenCalledWith(mockGainNode);
+      expect(mockGainNode.connect).toHaveBeenCalledWith(
+        mockAudioContext.destination
+      );
+    });
+
+    it('should set oscillator frequency to 800Hz and type to sine', async () => {
+      await audioManager.playMetronomeClick();
+
+      expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalledWith(
+        800,
+        0
+      );
+      expect(mockOscillator.type).toBe('sine');
+    });
+
+    it('should configure gain envelope for subtle metronome click duration', async () => {
+      await audioManager.playMetronomeClick();
+
+      expect(mockGainNode.gain.setValueAtTime).toHaveBeenCalledWith(0, 0);
+      expect(mockGainNode.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
+        0.05,
+        0.005
+      );
+      expect(mockGainNode.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
+        0,
+        0.03
+      );
+    });
+
+    it('should start and stop oscillator with correct timing', async () => {
+      await audioManager.playMetronomeClick();
+
+      expect(mockOscillator.start).toHaveBeenCalledWith(0);
+      expect(mockOscillator.stop).toHaveBeenCalledWith(0.03);
+    });
+
+    it('should not play if audio is disabled', async () => {
+      audioManager.setEnabled(false);
+
+      await audioManager.playMetronomeClick();
+
+      expect(mockAudioContext.createOscillator).not.toHaveBeenCalled();
+    });
+
+    it('should not play if not initialized', async () => {
+      audioManager.isInitialized = false;
+
+      await audioManager.playMetronomeClick();
+
+      expect(mockAudioContext.createOscillator).not.toHaveBeenCalled();
+    });
+
+    it('should handle play errors gracefully', async () => {
+      mockAudioContext.createOscillator.mockImplementation(() => {
+        throw new Error('Oscillator creation failed');
+      });
+
+      // Should not throw
+      await expect(audioManager.playMetronomeClick()).resolves.toBeUndefined();
+    });
+  });
+
+  describe('startMetronome', () => {
+    beforeEach(async () => {
+      await audioManager.initialize();
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should initialize audio context if not already initialized', async () => {
+      audioManager.isInitialized = false;
+      const initializeSpy = vi.spyOn(audioManager, 'initialize');
+
+      await audioManager.startMetronome();
+
+      expect(initializeSpy).toHaveBeenCalled();
+    });
+
+    it('should play initial metronome click when timers are active', async () => {
+      const playMetronomeClickSpy = vi.spyOn(
+        audioManager,
+        'playMetronomeClick'
+      );
+      const hasActiveTimers = vi.fn().mockReturnValue(true);
+
+      await audioManager.startMetronome(hasActiveTimers);
+
+      expect(playMetronomeClickSpy).toHaveBeenCalled();
+    });
+
+    it('should not play initial metronome click when no timers are active', async () => {
+      const playMetronomeClickSpy = vi.spyOn(
+        audioManager,
+        'playMetronomeClick'
+      );
+      const hasActiveTimers = vi.fn().mockReturnValue(false);
+
+      await audioManager.startMetronome(hasActiveTimers);
+
+      expect(playMetronomeClickSpy).not.toHaveBeenCalled();
+    });
+
+    it('should set up interval for subsequent metronome clicks', async () => {
+      const hasActiveTimers = vi.fn().mockReturnValue(true);
+      await audioManager.startMetronome(hasActiveTimers);
+
+      expect(audioManager.metronomeIntervalId).toBeDefined();
+    });
+
+    it('should play metronome click every second when timers are active', async () => {
+      const playMetronomeClickSpy = vi.spyOn(
+        audioManager,
+        'playMetronomeClick'
+      );
+      const hasActiveTimers = vi.fn().mockReturnValue(true);
+
+      await audioManager.startMetronome(hasActiveTimers);
+      playMetronomeClickSpy.mockClear(); // Clear initial call
+
+      vi.advanceTimersByTime(1000);
+      expect(playMetronomeClickSpy).toHaveBeenCalledTimes(1);
+
+      vi.advanceTimersByTime(1000);
+      expect(playMetronomeClickSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('should not play metronome click when timers are not active', async () => {
+      const playMetronomeClickSpy = vi.spyOn(
+        audioManager,
+        'playMetronomeClick'
+      );
+      const hasActiveTimers = vi.fn().mockReturnValue(false);
+
+      await audioManager.startMetronome(hasActiveTimers);
+      playMetronomeClickSpy.mockClear(); // Clear initial call
+
+      vi.advanceTimersByTime(1000);
+      expect(playMetronomeClickSpy).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(1000);
+      expect(playMetronomeClickSpy).not.toHaveBeenCalled();
+    });
+
+    it('should not start if already running', async () => {
+      const hasActiveTimers = vi.fn().mockReturnValue(true);
+      await audioManager.startMetronome(hasActiveTimers);
+      const firstIntervalId = audioManager.metronomeIntervalId;
+
+      await audioManager.startMetronome(hasActiveTimers);
+
+      expect(audioManager.metronomeIntervalId).toBe(firstIntervalId);
+    });
+
+    it('should throw error if audio is disabled', async () => {
+      audioManager.setEnabled(false);
+      const hasActiveTimers = vi.fn().mockReturnValue(true);
+
+      await expect(
+        audioManager.startMetronome(hasActiveTimers)
+      ).rejects.toThrow('Audio is disabled');
+    });
+  });
+
+  describe('stopMetronome', () => {
+    beforeEach(async () => {
+      await audioManager.initialize();
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should clear the metronome interval', async () => {
+      const hasActiveTimers = vi.fn().mockReturnValue(true);
+      await audioManager.startMetronome(hasActiveTimers);
+      const intervalId = audioManager.metronomeIntervalId;
+
+      audioManager.stopMetronome();
+
+      expect(audioManager.metronomeIntervalId).toBeNull();
+    });
+
+    it('should handle stopping when not running', () => {
+      // Should not throw
+      expect(() => audioManager.stopMetronome()).not.toThrow();
+    });
+  });
+
+  describe('cleanup', () => {
+    beforeEach(async () => {
+      await audioManager.initialize();
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should stop click testing, metronome and close audio context', async () => {
+      const hasActiveTimers = vi.fn().mockReturnValue(true);
+      await audioManager.startClickTesting();
+      await audioManager.startMetronome(hasActiveTimers);
+      const stopClickTestingSpy = vi.spyOn(audioManager, 'stopClickTesting');
+      const stopMetronomeSpy = vi.spyOn(audioManager, 'stopMetronome');
 
       audioManager.cleanup();
 
+      expect(stopClickTestingSpy).toHaveBeenCalled();
+      expect(stopMetronomeSpy).toHaveBeenCalled();
       expect(mockAudioContext.close).toHaveBeenCalled();
       expect(audioManager.audioContext).toBeNull();
       expect(audioManager.isInitialized).toBe(false);

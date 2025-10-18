@@ -35,8 +35,13 @@ function multiTimerApp() {
     settings: {
       audioEnabled: true,
       flashEnabled: true,
+      audioTestingEnabled: false,
+      metronomeEnabled: false,
     },
     intervalId: null,
+    audioTestingIntervalId: null,
+    audioTestingActive: false,
+    metronomeActive: false,
     isInitialized: false,
 
     // Initialize the application
@@ -296,9 +301,60 @@ function multiTimerApp() {
       return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     },
 
+    // Start audio testing
+    async startAudioTesting() {
+      try {
+        await audioManager.startClickTesting();
+        this.audioTestingActive = true;
+        console.log('Audio testing started');
+      } catch (error) {
+        console.error('Failed to start audio testing:', error);
+        this.audioTestingActive = false;
+      }
+    },
+
+    // Stop audio testing
+    async stopAudioTesting() {
+      try {
+        audioManager.stopClickTesting();
+        this.audioTestingActive = false;
+        console.log('Audio testing stopped');
+      } catch (error) {
+        console.error('Failed to stop audio testing:', error);
+      }
+    },
+
+    // Start metronome
+    async startMetronome() {
+      try {
+        // Pass function to check if timers are running
+        await audioManager.startMetronome(() => {
+          return this.timers.some((timer) => timer.status === 'running');
+        });
+        this.metronomeActive = true;
+        console.log('Metronome started');
+      } catch (error) {
+        console.error('Failed to start metronome:', error);
+        this.metronomeActive = false;
+      }
+    },
+
+    // Stop metronome
+    async stopMetronome() {
+      try {
+        audioManager.stopMetronome();
+        this.metronomeActive = false;
+        console.log('Metronome stopped');
+      } catch (error) {
+        console.error('Failed to stop metronome:', error);
+      }
+    },
+
     // Cleanup when component is destroyed
     destroy() {
       this.stopTimerInterval();
+      this.stopAudioTesting();
+      this.stopMetronome();
       audioManager.cleanup();
     },
   };

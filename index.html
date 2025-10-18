@@ -75,11 +75,11 @@
             <button x-on:click="addQuickTimers([30, 360, 1140, 1200])">
               Add 30s, 6m, 19m, 20m Timers
             </button>
-            <button x-on:click="addQuickTimers([60, 300, 600])">
-              Add 1m, 5m, 10m Timers
+            <button x-on:click="addQuickTimers([60, 300, 600, 900])">
+              Add 1m, 5m, 10m, 15m Timers
             </button>
-            <button x-on:click="addQuickTimers([120, 180, 240])">
-              Add 2m, 3m, 4m Timers
+            <button x-on:click="addQuickTimers([120, 180, 240, 300])">
+              Add 2m, 3m, 4m, 5m Timers
             </button>
           </div>
         </section>
@@ -135,6 +135,36 @@
           <label>
             <input type="checkbox" x-model="settings.flashEnabled" />
             Enable Visual Flash
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              x-model="settings.audioTestingEnabled"
+              x-on:change="settings.audioTestingEnabled ? startAudioTesting() : stopAudioTesting()"
+            />
+            Enable Audio Testing
+            <span
+              x-show="audioTestingActive"
+              class="audio-testing-indicator"
+              title="Audio testing is active - you should hear click sounds every second"
+            >
+              🔊 Testing
+            </span>
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              x-model="settings.metronomeEnabled"
+              x-on:change="settings.metronomeEnabled ? startMetronome() : stopMetronome()"
+            />
+            Enable Metronome
+            <span
+              x-show="metronomeActive"
+              class="audio-testing-indicator"
+              title="Metronome is active - you should hear a subtle click every second"
+            >
+              ♪ Metronome
+            </span>
           </label>
         </div>
       </footer>

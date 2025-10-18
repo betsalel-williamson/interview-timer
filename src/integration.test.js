@@ -18,6 +18,8 @@ describe('Multi-Timer Integration Tests', () => {
 
     // Spy on the actual audio manager instance
     audioManagerSpy = vi.spyOn(audioManager, 'playAlert').mockResolvedValue();
+    vi.spyOn(audioManager, 'startClickTesting').mockResolvedValue();
+    vi.spyOn(audioManager, 'stopClickTesting').mockImplementation(() => {});
 
     // Mock timers
     mockIntervalId = 123;
@@ -309,6 +311,72 @@ describe('Multi-Timer Integration Tests', () => {
       const endTime = performance.now();
 
       expect(endTime - startTime).toBeLessThan(10); // Should be very fast
+    });
+  });
+
+  describe('audio testing UI integration', () => {
+    let app;
+
+    beforeEach(() => {
+      app = multiTimerApp();
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+      if (app) {
+        app.destroy();
+      }
+    });
+
+    it('should start audio testing when checkbox is enabled', async () => {
+      const startClickTestingSpy = vi.spyOn(audioManager, 'startClickTesting');
+
+      app.settings.audioTestingEnabled = true;
+      await app.startAudioTesting();
+
+      expect(startClickTestingSpy).toHaveBeenCalled();
+      expect(app.audioTestingActive).toBe(true);
+    });
+
+    it('should stop audio testing when checkbox is disabled', async () => {
+      const stopClickTestingSpy = vi.spyOn(audioManager, 'stopClickTesting');
+
+      // Start testing first
+      app.settings.audioTestingEnabled = true;
+      await app.startAudioTesting();
+      expect(app.audioTestingActive).toBe(true);
+
+      // Then stop it
+      app.settings.audioTestingEnabled = false;
+      await app.stopAudioTesting();
+
+      expect(stopClickTestingSpy).toHaveBeenCalled();
+      expect(app.audioTestingActive).toBe(false);
+    });
+
+    it('should handle audio testing errors gracefully', async () => {
+      const startClickTestingSpy = vi
+        .spyOn(audioManager, 'startClickTesting')
+        .mockRejectedValue(new Error('Audio testing failed'));
+
+      app.settings.audioTestingEnabled = true;
+      await app.startAudioTesting();
+
+      expect(startClickTestingSpy).toHaveBeenCalled();
+      expect(app.audioTestingActive).toBe(false);
+    });
+
+    it('should clean up audio testing on component destroy', async () => {
+      const stopClickTestingSpy = vi.spyOn(audioManager, 'stopClickTesting');
+
+      app.settings.audioTestingEnabled = true;
+      await app.startAudioTesting();
+      expect(app.audioTestingActive).toBe(true);
+
+      app.destroy();
+
+      expect(stopClickTestingSpy).toHaveBeenCalled();
     });
   });
 });
