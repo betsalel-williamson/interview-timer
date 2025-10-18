@@ -1,216 +1,213 @@
-# Multi-Timer Web App
+# Interview Timer
 
-A simple static web application that allows users to create and manage multiple timers simultaneously for interview practice. Perfect for practicing structured coding interviews with timed phases.
+<p align="center">
+  A modern web application for managing multiple timers simultaneously, designed specifically for interview practice and time management.
+</p>
 
-## Features
+<p align="center">
+    <a href="https://github.com/betsalel-williamson/interview-timer/blob/main/LICENSE">
+        <img alt="License" src="https://img.shields.io/github/license/betsalel-williamson/interview-timer?style=flat-square&color=blue">
+    </a>
+    <a href="https://github.com/betsalel-williamson/interview-timer/actions/workflows/ci-cd.yml">
+        <img alt="CI Status" src="https://github.com/betsalel-williamson/interview-timer/actions/workflows/ci-cd.yml/badge.svg">
+    </a>
+    <img alt="Language" src="https://img.shields.io/github/languages/count/betsalel-williamson/interview-timer?style=flat-square">
+    <img alt="Language" src="https://img.shields.io/github/languages/top/betsalel-williamson/interview-timer?style=flat-square">
+</p>
 
-- **Multiple Timers**: Create and manage multiple timers with different durations
-- **Synchronized Start**: Start all timers simultaneously with one click
-- **Real-time Countdown**: See remaining time count down for each timer
-- **Audio Alerts**: 2-second alert sound when timers complete
-- **Visual Alerts**: Webpage flashes when timers complete
-- **Easy Setup**: Simple minutes/seconds input for each timer
-- **Modern Build**: Vite for fast development and optimized production builds
-- **Alpine.js Reactivity**: Clean state management without framework complexity
+## Overview
 
-## Quick Start
+Interview Timer is a lightweight, responsive web application built with Alpine.js and Vite that allows you to run multiple timers simultaneously. Perfect for interview practice, time management, and any scenario where you need to track multiple time intervals.
 
-### Prerequisites
+### Key Features
 
-- Node.js (version 18 or higher)
-- npm or pnpm package manager
+- **Multiple Simultaneous Timers**: Run unlimited timers at the same time
+- **Interview Practice Ready**: Quick setup buttons for common interview timing scenarios
+- **Real-time Editing**: Click on any timer to edit its duration while running
+- **Audio & Visual Alerts**: Configurable audio alerts and screen flash notifications
+- **Metronome**: Optional metronome for timing practice
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **No Dependencies**: Pure vanilla JavaScript with Alpine.js - no heavy frameworks
+
+## Prerequisites
+
+- Node.js v18.0.0 or higher
+- pnpm (recommended) or npm
+
+## Getting Started
 
 ### Installation
 
-1. Clone or download this repository
-2. Install dependencies:
+1. **Clone the repository:**
 
    ```bash
-   npm install
-   # or
+   git clone https://github.com/betsalel-williamson/interview-timer.git
+   cd Interview Timer
+   ```
+
+2. **Install dependencies:**
+
+   ```bash
    pnpm install
+   # or
+   npm install
    ```
 
-3. Start the development server:
+3. **Start the development server:**
 
    ```bash
-   npm run dev
-   # or
    pnpm dev
+   # or
+   npm run dev
    ```
 
-4. Open your browser to `https://localhost:3000`
+4. **Open your browser:**
+   Navigate to `http://localhost:5173` to see the application.
 
-### Development Commands
+### Building for Production
 
 ```bash
-# Start development server with hot reload
-npm run dev
-
-# Build for production
+pnpm build
+# or
 npm run build
-
-# Preview production build
-npm run preview
-
-# Start development server (alias for dev)
-npm start
 ```
+
+The built files will be in the `dist/` directory, ready for deployment to any static hosting service.
 
 ## Usage
 
-### Adding Timers
+### Basic Timer Operations
 
-1. Enter minutes and seconds in the input fields
-2. Click "Add Timer" to add it to your timer list
-3. Repeat for multiple timers
+1. **Add a Timer**: Use the form at the bottom to set minutes and seconds, then click "Add Timer"
+2. **Start/Stop**: Click the toggle switch on any timer to start, pause, or resume it
+3. **Edit Duration**: Click on the time display of any timer to edit its duration
+4. **Remove Timer**: Click the "Remove" button on any timer
 
-### Running Timers
+### Quick Setup for Interview Practice
 
-1. Click "Start All" to begin all timers simultaneously
-2. Watch the countdown for each timer
-3. When a timer reaches zero:
-   - You'll hear a 2-second alert sound
-   - The webpage will flash to get your attention
+The app includes quick setup buttons for common interview scenarios:
 
-### Resetting
+- **30s, 6m, 19m, 20m**: Common interview timing structure
+- **1m, 5m, 10m, 15m**: Progressive timing practice
+- **2m, 3m, 4m, 5m**: Short interval practice
 
-- Click "Reset All" to clear all timers and start over
+### Global Controls
 
-## Example Use Case
+- **Start All/Stop All**: The main toggle at the top controls all timers simultaneously
+- **Reset All**: Resets all timers to their original duration
+- **Auto-start**: Enable to automatically start new timers when added
 
-Set up these specific timers for interview practice:
+### Settings
 
-- 30 seconds (Problem Understanding)
-- 6 minutes (Initial Coding)
-- 19 minutes (Testing & Debugging)
-- 20 minutes (Optimization & Edge Cases)
+Configure the following options in the footer:
 
-All timers will start together and alert you as each phase completes, helping you practice realistic interview timing.
-
-## Browser Compatibility
-
-- Chrome/Chromium (recommended)
-- Firefox
-- Safari
-- Edge
-
-**Note**: HTTPS is required for Web Audio API functionality. The development server automatically provides HTTPS support.
+- **Audio Alerts**: Play sound when timers complete
+- **Visual Flash**: Flash the screen when timers complete
+- **Audio Testing**: Test audio functionality with periodic clicks
+- **Metronome**: Enable subtle metronome clicks for timing practice
 
 ## Development
 
 ### Project Structure
 
 ```
-multi-timer/
-├── package.json        # npm/pnpm configuration with Vite
-├── vite.config.js      # Vite configuration
-├── vitest.config.js    # Vitest unit testing configuration
-├── playwright.config.js # Playwright E2E testing configuration
-├── vercel.json         # Vercel deployment configuration
-├── index.html          # Main application file with Alpine.js
-├── src/                # Source files
-│   ├── main.js         # Application entry point
-│   ├── style.css       # Styling and animations
-│   └── audio.js        # Audio manager utilities
-├── tests/              # Test files
-│   ├── *.test.js       # Unit tests (Vitest)
-│   └── *.spec.js       # E2E tests (Playwright)
-├── dist/               # Production build output
-├── .github/            # GitHub Actions workflows
-│   └── workflows/      # CI/CD pipeline configuration
-├── README.md           # This file
-└── docs/               # Documentation
-    └── architecture/   # Architecture documents
+Interview Timer/
+├── src/
+│   ├── main.js          # Main application logic
+│   ├── audio.js         # Audio management and metronome
+│   └── style.css        # Application styles
+├── tests/               # Test files
+├── docs/                # Documentation
+└── dist/                # Built application
 ```
-
-### Development Commands
-
-- `npm run dev` - Start Vite development server with hot reload
-- `npm run build` - Build optimized production bundle
-- `npm run preview` - Preview production build locally
 
 ### Testing
 
-- `npm run test:unit` - Run unit tests with Vitest
-- `npm run test:unit:coverage` - Run unit tests with coverage report
-- `npm run test:e2e` - Run end-to-end tests with Playwright
-- `npm run test:e2e:ui` - Run E2E tests with Playwright UI
-- `npm run test` - Run all tests (unit + E2E)
+The project includes comprehensive testing with Vitest for unit tests and Playwright for end-to-end tests.
+
+**Run all tests:**
+
+```bash
+pnpm test
+```
+
+**Run unit tests only:**
+
+```bash
+pnpm test:unit
+```
+
+**Run end-to-end tests:**
+
+```bash
+pnpm test:e2e
+```
+
+**Run tests with coverage:**
+
+```bash
+pnpm test:unit:coverage
+```
 
 ### Code Quality
 
-- `npm run lint` - Check code formatting with Prettier
-- `npm run lint:fix` - Fix code formatting issues
+**Lint code:**
 
-## CI/CD Pipeline
+```bash
+pnpm lint
+```
 
-This project includes automated CI/CD pipelines using GitHub Actions:
+**Fix linting issues:**
 
-### Automated Testing
+```bash
+pnpm lint:fix
+```
 
-- **Unit Tests**: Vitest with coverage reporting
-- **E2E Tests**: Playwright across multiple browsers and devices
-- **Linting**: Prettier code formatting checks
-- **Security**: Dependency vulnerability scanning
+## Architecture
 
-### Automated Deployment
+Interview Timer is built with a simple, maintainable architecture:
 
-- **Pull Requests**: Validation only (no deployment)
-- **Main Branch**: Full CI/CD pipeline with automatic deployment to Vercel
+- **Alpine.js**: Reactive frontend framework for state management
+- **Vite**: Fast build tool and development server
+- **Web Audio API**: For audio alerts and metronome functionality
+- **CSS Grid/Flexbox**: Responsive layout system
+- **Test-Driven Development**: Comprehensive test coverage
 
-### Pipeline Features
+### Key Components
 
-- Intelligent caching for faster builds
-- Parallel job execution
-- Comprehensive test reporting
-- Security vulnerability scanning
-- Automated Vercel deployment
+- **Timer Factory**: Creates timer objects with state management
+- **Audio Manager**: Handles all audio functionality including metronome
+- **Alpine.js Component**: Main application state and UI logic
 
-For detailed information about the CI/CD setup, see [`.github/README.md`](.github/README.md).
+## Browser Support
 
-## Deployment
+Interview Timer works in all modern browsers that support:
 
-This is a static web application that can be deployed to any static hosting service:
-
-- **Vercel** (automated via CI/CD)
-- GitHub Pages
-- Netlify
-- AWS S3 + CloudFront
-- Any web server serving static files
-
-### Production Build
-
-1. Build the application:
-
-   ```bash
-   npm run build
-   ```
-
-2. Upload the contents of the `dist/` folder to your hosting service.
-
-The Vite build process optimizes and bundles all assets for production deployment.
-
-### Vercel Deployment
-
-The project is configured for automatic deployment to Vercel:
-
-1. **Automatic**: Pushes to `main` branch trigger automatic deployment
-2. **Manual**: Use the Vercel CLI or dashboard for manual deployments
-3. **Configuration**: See `vercel.json` for deployment settings
-
-## License
-
-MIT License - see LICENSE file for details.
+- ES6 modules
+- Web Audio API
+- CSS Grid and Flexbox
 
 ## Contributing
 
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+### Development Workflow
+
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+4. Add tests for new functionality
+5. Ensure all tests pass (`pnpm test`)
+6. Commit your changes (`git commit -m 'Add some amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
 
-## Support
+## License
 
-For issues or questions, please open an issue on the GitHub repository.
+This project is licensed under the [MIT License](./LICENSE).
+
+## Acknowledgments
+
+- Built with [Alpine.js](https://alpinejs.dev/) for reactive UI
+- Powered by [Vite](https://vitejs.dev/) for fast development
+- Tested with [Vitest](https://vitest.dev/) and [Playwright](https://playwright.dev/)

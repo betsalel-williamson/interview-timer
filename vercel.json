@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "multi-timer",
+  "name": "Interview Timer",
   "builds": [
     {
       "src": "package.json",

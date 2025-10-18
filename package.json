@@ -1,5 +1,5 @@
 {
-  "name": "multi-timer",
+  "name": "Interview Timer",
   "version": "1.0.0",
   "description": "A simple static web application for managing multiple timers simultaneously for interview practice",
   "type": "module",
@@ -24,13 +24,13 @@
   },
   "keywords": [
     "timer",
-    "multi-timer",
+    "Interview Timer",
     "web-app",
     "interview-practice",
     "alpinejs",
     "vite"
   ],
-  "author": "Multi-Timer Team",
+  "author": "Interview Timer Team",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
@@ -42,12 +42,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-username/multi-timer.git"
+    "url": "git+https://github.com/betsalel-williamson/interview-timer.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/multi-timer/issues"
+    "url": "https://github.com/betsalel-williamson/interview-timer/issues"
   },
-  "homepage": "https://github.com/your-username/multi-timer#readme",
+  "homepage": "https://github.com/betsalel-williamson/interview-timer#readme",
   "devDependencies": {
     "@playwright/test": "^1.56.1",
     "@vitest/coverage-v8": "^3.2.4",

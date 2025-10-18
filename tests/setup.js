@@ -1,5 +1,5 @@
 /**
- * Test setup for Multi-Timer Application
+ * Test setup for Interview Timer Application
  * Configures the testing environment for Alpine.js and Web APIs
  */
 

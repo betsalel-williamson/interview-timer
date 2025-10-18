@@ -8,7 +8,7 @@ global.Alpine = {
 // Import the app and audio manager
 import { multiTimerApp, audioManager } from '../src/main.js';
 
-describe('Multi-Timer Integration Tests', () => {
+describe('Interview Timer Integration Tests', () => {
   let app;
   let mockIntervalId;
   let audioManagerSpy;

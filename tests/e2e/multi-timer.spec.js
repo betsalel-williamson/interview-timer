@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Multi-Timer Application', () => {
+test.describe('Interview Timer Application', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     // Wait for the app to initialize
@@ -11,7 +11,7 @@ test.describe('Multi-Timer Application', () => {
 
   test('should load the application successfully', async ({ page }) => {
     // Check that the main elements are present
-    await expect(page.locator('h1')).toContainText('Multi-Timer');
+    await expect(page.locator('h1')).toContainText('Interview Timer');
     await expect(page.locator('[data-testid="timer-form"]')).toBeVisible();
     await expect(page.locator('[data-testid="quick-timers"]')).toBeVisible();
   });

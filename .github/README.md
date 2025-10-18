@@ -1,6 +1,6 @@
 # GitHub Actions CI/CD Pipeline
 
-This directory contains GitHub Actions workflows for automated testing, building, and deployment of the Multi-Timer application.
+This directory contains GitHub Actions workflows for automated testing, building, and deployment of the Interview Timer application.
 
 ## Workflows
 

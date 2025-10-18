@@ -16,7 +16,7 @@ You need to add these three secrets to your GitHub repository:
 
 1. Go to [Vercel Dashboard](https://vercel.com/account/tokens)
 2. Click "Create Token"
-3. Give it a descriptive name (e.g., "GitHub Actions Multi-Timer")
+3. Give it a descriptive name (e.g., "GitHub Actions Interview Timer")
 4. Set expiration (recommended: 1 year)
 5. Copy the generated token
 

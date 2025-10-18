@@ -1,5 +1,5 @@
 /**
- * Audio Manager for Multi-Timer Application
+ * Audio Manager for Interview Timer Application
  * Handles Web Audio API for timer completion alerts
  */
 

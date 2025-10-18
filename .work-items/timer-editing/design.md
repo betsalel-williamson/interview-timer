@@ -6,7 +6,7 @@ Enable users to edit timer durations by clicking on the timer display and enteri
 
 ## 2. Technical Design
 
-This design extends the existing Alpine.js-based multi-timer application to support inline editing of timer durations. The solution leverages Alpine.js's reactive data system and DOM manipulation capabilities to provide a seamless editing experience.
+This design extends the existing Alpine.js-based Interview Timer application to support inline editing of timer durations. The solution leverages Alpine.js's reactive data system and DOM manipulation capabilities to provide a seamless editing experience.
 
 ### Architecture Alignment
 

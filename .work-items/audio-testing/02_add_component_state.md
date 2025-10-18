@@ -85,7 +85,7 @@ async toggleAudioTesting() {
 ```javascript
 // Add this to the component to watch for settings changes:
 async init() {
-  console.log('Initializing Multi-Timer App');
+  console.log('Initializing Interview Timer App');
 
   // Set up interval for timer updates
   this.startTimerInterval();
@@ -96,7 +96,7 @@ async init() {
   });
 
   this.isInitialized = true;
-  console.log('Multi-Timer App initialized successfully');
+  console.log('Interview Timer App initialized successfully');
 },
 ```
 

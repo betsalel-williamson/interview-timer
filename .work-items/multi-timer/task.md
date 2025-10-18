@@ -1,8 +1,8 @@
-# Multi-Timer Implementation Tasks
+# Interview Timer Implementation Tasks
 
 ## Task Overview
 
-This document breaks down the implementation of the multi-timer web application into sequential, ACID-compliant tasks that can be completed incrementally while maintaining a working application at each step.
+This document breaks down the implementation of the Interview Timer web application into sequential, ACID-compliant tasks that can be completed incrementally while maintaining a working application at each step.
 
 ## Task Sequence
 

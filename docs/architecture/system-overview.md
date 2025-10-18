@@ -1,4 +1,4 @@
-# Multi-Timer Web App Architecture
+# Interview Timer Web App Architecture
 
 ## 1. Introduction
 
@@ -67,7 +67,7 @@ This document outlines the architecture for a static web application that allows
 ### Core Components
 
 ```
-Multi-Timer App (Alpine.js)
+Interview Timer App (Alpine.js)
 ├── Main App Component (x-data)
 │   ├── Timer State Management
 │   ├── Timer Creation & Validation
@@ -118,7 +118,7 @@ Multi-Timer App (Alpine.js)
 ### Static File Structure
 
 ```
-multi-timer/
+Interview Timer/
 ├── package.json        # npm/pnpm configuration with Vite and vi test
 ├── vite.config.js      # Vite configuration
 ├── vitest.config.js    # vi test configuration

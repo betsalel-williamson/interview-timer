@@ -25,7 +25,7 @@ vi.mock('./audio.js', () => ({
 // Import after mocking
 import { multiTimerApp, createTimer, audioManager } from '../src/main.js';
 
-describe('Multi-Timer Application', () => {
+describe('Interview Timer Application', () => {
   let app;
   let mockIntervalId;
   let setIntervalSpy;

@@ -1,4 +1,4 @@
-# Multi-Timer Technical Design
+# Interview Timer Technical Design
 
 ## Objective
 
