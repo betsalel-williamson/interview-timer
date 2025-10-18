@@ -5,8 +5,8 @@ on:
     branches: [main, develop]
 
 env:
-  NODE_VERSION: '18'
-  PNPM_VERSION: '8'
+  NODE_VERSION: '20'
+  PNPM_VERSION: '10'
 
 jobs:
   # Quick validation for PRs
@@ -46,16 +46,52 @@ jobs:
           pnpm config set enable-pre-post-scripts true
           pnpm config set enable-build-scripts true
 
+      - name: Troubleshoot lockfile issues
+        run: |
+          echo "=== CI Environment Debug Information ==="
+          echo "Current working directory: $(pwd)"
+          echo "Repository name: ${{ github.repository }}"
+          echo "Repository path: ${{ github.workspace }}"
+          echo "GitHub ref: ${{ github.ref }}"
+          echo "GitHub event name: ${{ github.event_name }}"
+          echo ""
+          echo "=== File System Check ==="
+          echo "Contents of current directory:"
+          ls -la
+          echo ""
+          echo "Looking for pnpm-lock.yaml:"
+          find . -name "pnpm-lock.yaml" -type f 2>/dev/null || echo "pnpm-lock.yaml not found"
+          echo ""
+          echo "Looking for package.json:"
+          find . -name "package.json" -type f 2>/dev/null || echo "package.json not found"
+          echo ""
+          echo "=== pnpm Configuration ==="
+          pnpm config list
+          echo ""
+          echo "=== pnpm Version ==="
+          pnpm --version
+          echo ""
+          echo "=== Node Version ==="
+          node --version
+          echo ""
+          echo "=== Environment Variables ==="
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
+          echo "GITHUB_REF: $GITHUB_REF"
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Run linter
+        id: linter
         run: pnpm run lint
 
       - name: Run unit tests
+        id: unit-tests
         run: pnpm run test:unit
 
       - name: Build application
+        id: build
         run: pnpm run build
 
       - name: Comment PR with build status
@@ -79,7 +115,7 @@ jobs:
             **Status:** ${status}
 
             **Checks:**
-            - Linting: ${{ steps.lint.outcome }}
+            - Linting: ${{ steps.linter.outcome }}
             - Unit Tests: ${{ steps.unit-tests.outcome }}
             - Build: ${{ steps.build.outcome }}
 

@@ -203,7 +203,10 @@ function multiTimerApp() {
       // Initialize audio on first user interaction
       await this.initializeAudio();
 
-      const timer = createTimer(this.newTimer.minutes, this.newTimer.seconds);
+      const timer = createTimer(
+        Number(this.newTimer.minutes),
+        Number(this.newTimer.seconds)
+      );
       this.timers.push(timer);
 
       // Clear form
@@ -246,13 +249,15 @@ function multiTimerApp() {
 
     // Validate timer input
     isValidTimer() {
-      const totalSeconds = this.newTimer.minutes * 60 + this.newTimer.seconds;
+      const minutes = Number(this.newTimer.minutes);
+      const seconds = Number(this.newTimer.seconds);
+      const totalSeconds = minutes * 60 + seconds;
       return (
         totalSeconds > 0 &&
-        this.newTimer.minutes >= 0 &&
-        this.newTimer.seconds >= 0 &&
-        this.newTimer.minutes <= 59 &&
-        this.newTimer.seconds <= 59
+        minutes >= 0 &&
+        seconds >= 0 &&
+        minutes <= 59 &&
+        seconds <= 59
       );
     },
 

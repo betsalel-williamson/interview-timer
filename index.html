@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <div id="app" x-data="multiTimerApp()">
+    <div id="app" data-testid="app-container" x-data="multiTimerApp()">
       <header>
         <h1>Multi-Timer</h1>
         <p>Practice your interview timing with multiple synchronized timers</p>
@@ -15,7 +15,11 @@
 
       <main>
         <!-- Timer List - Front and Center -->
-        <section class="timer-list" x-show="timers.length > 0">
+        <section
+          class="timer-list"
+          data-testid="timer-list"
+          x-show="timers.length > 0"
+        >
           <div class="timer-controls-header">
             <h2>Active Timers</h2>
             <div class="timer-controls">
@@ -23,6 +27,7 @@
                 <label class="toggle-switch">
                   <input
                     type="checkbox"
+                    data-testid="start-all-button"
                     :checked="hasRunningTimers()"
                     x-on:change="handleToggleChange()"
                     :disabled="isStartStopAllButtonDisabled()"
@@ -39,7 +44,7 @@
           <div class="timers-grid">
             <template x-for="timer in timers" :key="timer.id">
               <div
-                class="timer-card"
+                class="timer-card timer-item"
                 :data-timer-id="timer.id"
                 :class="{
                   'timer-running': timer.status === 'running',
@@ -47,7 +52,7 @@
                   'timer-ready': timer.status === 'ready'
                 }"
               >
-                <div class="timer-display">
+                <div class="timer-display" data-testid="timer-display">
                   <!-- Normal display mode -->
                   <template x-if="!timer.isEditing">
                     <div class="timer-display-content">
@@ -79,10 +84,11 @@
                   <!-- Edit mode -->
                   <template x-if="timer.isEditing">
                     <div class="timer-display-content timer-edit-mode">
-                      <div class="timer-edit-inputs">
+                      <div class="timer-edit-inputs" data-testid="edit-inputs">
                         <input
                           type="text"
                           class="timer-edit-minutes"
+                          data-testid="edit-minutes"
                           x-model="timer.editMinutes"
                           x-on:keydown.enter="saveEditTimer(timer.id)"
                           x-on:keydown.escape="cancelEditTimer(timer.id)"
@@ -99,6 +105,7 @@
                         <input
                           type="text"
                           class="timer-edit-seconds"
+                          data-testid="edit-seconds"
                           x-model="timer.editSeconds"
                           x-on:keydown.enter="saveEditTimer(timer.id)"
                           x-on:keydown.escape="cancelEditTimer(timer.id)"
@@ -140,7 +147,11 @@
                       ></span>
                     </label>
                   </div>
-                  <button x-on:click="removeTimer(timer.id)" class="remove-btn">
+                  <button
+                    x-on:click="removeTimer(timer.id)"
+                    class="remove-btn"
+                    data-testid="remove-timer"
+                  >
                     Remove
                   </button>
                 </div>
@@ -150,7 +161,11 @@
         </section>
 
         <!-- Quick Setup for Interview Practice -->
-        <section class="quick-setup" x-show="timers.length === 0">
+        <section
+          class="quick-setup"
+          data-testid="quick-timers"
+          x-show="timers.length === 0"
+        >
           <h2>Quick Setup for Interview Practice</h2>
           <p>Common timer combinations for interview practice:</p>
           <div class="quick-buttons">
@@ -164,10 +179,48 @@
               Add 2m, 3m, 4m, 5m Timers
             </button>
           </div>
+          <div class="individual-quick-timers">
+            <button
+              data-testid="quick-timer-30s"
+              x-on:click="addQuickTimers([30])"
+            >
+              30s
+            </button>
+            <button
+              data-testid="quick-timer-1m"
+              x-on:click="addQuickTimers([60])"
+            >
+              1m
+            </button>
+            <button
+              data-testid="quick-timer-2m"
+              x-on:click="addQuickTimers([120])"
+            >
+              2m
+            </button>
+            <button
+              data-testid="quick-timer-5m"
+              x-on:click="addQuickTimers([300])"
+            >
+              5m
+            </button>
+            <button
+              data-testid="quick-timer-5s"
+              x-on:click="addQuickTimers([5])"
+            >
+              5s
+            </button>
+            <button
+              data-testid="quick-timer-10s"
+              x-on:click="addQuickTimers([10])"
+            >
+              10s
+            </button>
+          </div>
         </section>
 
         <!-- Timer Input Form - Moved to bottom -->
-        <section class="timer-form">
+        <section class="timer-form" data-testid="timer-form">
           <h2>Add New Timer</h2>
           <form x-on:submit.prevent="addTimer()">
             <div class="form-row">
@@ -176,6 +229,7 @@
                 <input
                   type="number"
                   id="minutes"
+                  data-testid="minutes-input"
                   x-model="newTimer.minutes"
                   min="0"
                   max="59"
@@ -187,6 +241,7 @@
                 <input
                   type="number"
                   id="seconds"
+                  data-testid="seconds-input"
                   x-model="newTimer.seconds"
                   min="0"
                   max="59"
@@ -194,7 +249,11 @@
                 />
               </div>
               <div class="form-actions">
-                <button type="submit" :disabled="!isValidTimer()">
+                <button
+                  type="submit"
+                  data-testid="add-timer-button"
+                  :disabled="!isValidTimer()"
+                >
                   Add Timer
                 </button>
                 <div class="toggle-container">
@@ -212,6 +271,7 @@
             <div
               x-show="formError"
               class="error-message"
+              data-testid="form-error"
               x-text="formError"
             ></div>
           </form>
@@ -219,18 +279,23 @@
       </main>
 
       <footer>
-        <div class="settings">
+        <div class="settings" data-testid="audio-settings">
           <label>
             <input type="checkbox" x-model="settings.audioEnabled" />
             Enable Audio Alerts
           </label>
           <label>
-            <input type="checkbox" x-model="settings.flashEnabled" />
+            <input
+              type="checkbox"
+              data-testid="flash-checkbox"
+              x-model="settings.flashEnabled"
+            />
             Enable Visual Flash
           </label>
           <label>
             <input
               type="checkbox"
+              data-testid="audio-testing-checkbox"
               x-model="settings.audioTestingEnabled"
               x-on:change="settings.audioTestingEnabled ? startAudioTesting() : stopAudioTesting()"
             />
@@ -238,6 +303,7 @@
             <span
               x-show="audioTestingActive"
               class="audio-testing-indicator"
+              data-testid="audio-testing-indicator"
               title="Audio testing is active - you should hear click sounds every second"
             >
               🔊 Testing
@@ -246,6 +312,7 @@
           <label>
             <input
               type="checkbox"
+              data-testid="metronome-checkbox"
               x-model="settings.metronomeEnabled"
               x-on:change="handleMetronomeToggle()"
             />
@@ -253,6 +320,7 @@
             <span
               x-show="metronomeActive"
               class="audio-testing-indicator"
+              data-testid="metronome-indicator"
               title="Metronome is active - you should hear a subtle click every second"
             >
               ♪ Metronome
