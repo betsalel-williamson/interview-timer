@@ -1,0 +1,50 @@
+{
+  "name": "multi-timer",
+  "version": "1.0.0",
+  "description": "A simple static web application for managing multiple timers simultaneously for interview practice",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "start": "npm run dev",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "prettier --check .",
+    "lint:fix": "prettier --write .",
+    "prepare": "husky"
+  },
+  "keywords": [
+    "timer",
+    "multi-timer",
+    "web-app",
+    "interview-practice",
+    "alpinejs",
+    "vite"
+  ],
+  "author": "Multi-Timer Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/multi-timer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/multi-timer/issues"
+  },
+  "homepage": "https://github.com/your-username/multi-timer#readme",
+  "devDependencies": {
+    "@vitest/coverage-v8": "^3.2.4",
+    "husky": "^9.1.7",
+    "jsdom": "^25.0.1",
+    "prettier": "3.6.2",
+    "vite": "^7.1.10",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "alpinejs": "^3.15.0"
+  }
+}

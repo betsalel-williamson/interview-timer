@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multi-Timer</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app" x-data="multiTimerApp()">
+      <header>
+        <h1>Multi-Timer</h1>
+        <p>Practice your interview timing with multiple synchronized timers</p>
+      </header>
+
+      <main>
+        <!-- Timer List - Front and Center -->
+        <section class="timer-list" x-show="timers.length > 0">
+          <div class="timer-controls-header">
+            <h2>Active Timers</h2>
+            <div class="timer-controls">
+              <button
+                x-on:click="startAllTimers()"
+                :disabled="!canStartAll()"
+                class="start-all-btn"
+              >
+                Start All Timers
+              </button>
+              <button x-on:click="resetAllTimers()" class="reset-all-btn">
+                Reset All
+              </button>
+            </div>
+          </div>
+          <div class="timers-grid">
+            <template x-for="timer in timers" :key="timer.id">
+              <div
+                class="timer-card"
+                :class="{
+                  'timer-running': timer.status === 'running',
+                  'timer-completed': timer.status === 'completed',
+                  'timer-ready': timer.status === 'ready'
+                }"
+              >
+                <div class="timer-display">
+                  <div
+                    class="timer-time"
+                    x-text="formatTime(timer.remainingTime)"
+                  ></div>
+                  <div
+                    class="timer-duration"
+                    x-text="`of ${formatTime(timer.duration)}`"
+                  ></div>
+                </div>
+                <div class="timer-status" x-text="timer.status"></div>
+                <div class="timer-controls">
+                  <button
+                    x-on:click="toggleTimer(timer.id)"
+                    x-text="timer.status === 'running' ? 'Pause' : 'Start'"
+                    :disabled="timer.status === 'completed'"
+                  ></button>
+                  <button x-on:click="removeTimer(timer.id)" class="remove-btn">
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </template>
+          </div>
+        </section>
+
+        <!-- Quick Setup for Interview Practice -->
+        <section class="quick-setup" x-show="timers.length === 0">
+          <h2>Quick Setup for Interview Practice</h2>
+          <p>Common timer combinations for interview practice:</p>
+          <div class="quick-buttons">
+            <button x-on:click="addQuickTimers([30, 360, 1140, 1200])">
+              Add 30s, 6m, 19m, 20m Timers
+            </button>
+            <button x-on:click="addQuickTimers([60, 300, 600])">
+              Add 1m, 5m, 10m Timers
+            </button>
+            <button x-on:click="addQuickTimers([120, 180, 240])">
+              Add 2m, 3m, 4m Timers
+            </button>
+          </div>
+        </section>
+
+        <!-- Timer Input Form - Moved to bottom -->
+        <section class="timer-form">
+          <h2>Add New Timer</h2>
+          <form x-on:submit.prevent="addTimer()">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="minutes">Minutes:</label>
+                <input
+                  type="number"
+                  id="minutes"
+                  x-model="newTimer.minutes"
+                  min="0"
+                  max="59"
+                  placeholder="0"
+                />
+              </div>
+              <div class="form-group">
+                <label for="seconds">Seconds:</label>
+                <input
+                  type="number"
+                  id="seconds"
+                  x-model="newTimer.seconds"
+                  min="0"
+                  max="59"
+                  placeholder="0"
+                />
+              </div>
+              <div class="form-actions">
+                <button type="submit" :disabled="!isValidTimer()">
+                  Add Timer
+                </button>
+              </div>
+            </div>
+            <div
+              x-show="formError"
+              class="error-message"
+              x-text="formError"
+            ></div>
+          </form>
+        </section>
+      </main>
+
+      <footer>
+        <div class="settings">
+          <label>
+            <input type="checkbox" x-model="settings.audioEnabled" />
+            Enable Audio Alerts
+          </label>
+          <label>
+            <input type="checkbox" x-model="settings.flashEnabled" />
+            Enable Visual Flash
+          </label>
+        </div>
+      </footer>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
