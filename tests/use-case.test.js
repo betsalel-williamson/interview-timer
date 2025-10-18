@@ -6,7 +6,7 @@ global.Alpine = {
 };
 
 // Import the app and audio manager
-import { multiTimerApp, audioManager } from './main.js';
+import { multiTimerApp, audioManager } from '../src/main.js';
 
 describe('Specific Use Case: Interview Practice Timers', () => {
   let app;
@@ -60,7 +60,7 @@ describe('Specific Use Case: Interview Practice Timers', () => {
       expect(app.timers[3].duration).toBe(1200); // 20 minutes (20 * 60)
     });
 
-    it('should start all timers simultaneously with one click', () => {
+    it('should start all timers simultaneously with one click', async () => {
       const durations = [30, 360, 1140, 1200];
       app.addQuickTimers(durations);
 
@@ -69,7 +69,7 @@ describe('Specific Use Case: Interview Practice Timers', () => {
 
       // Start all with one action
       const startTime = Date.now();
-      app.startAllTimers();
+      await app.startAllTimers();
 
       // All timers should start at exactly the same time
       app.timers.forEach((timer) => {
@@ -82,7 +82,7 @@ describe('Specific Use Case: Interview Practice Timers', () => {
     it('should complete each timer with proper audio and visual alerts', async () => {
       const durations = [30, 360, 1140, 1200];
       app.addQuickTimers(durations);
-      app.startAllTimers();
+      await app.startAllTimers();
 
       // Complete 30-second timer
       vi.advanceTimersByTime(30000);
@@ -107,7 +107,7 @@ describe('Specific Use Case: Interview Practice Timers', () => {
       expect(app.timers).toHaveLength(4);
 
       // Start all timers
-      app.startAllTimers();
+      await app.startAllTimers();
       expect(app.timers.every((t) => t.status === 'running')).toBe(true);
 
       // Simulate the interview practice session
@@ -135,10 +135,10 @@ describe('Specific Use Case: Interview Practice Timers', () => {
       expect(app.timers.every((t) => t.status === 'completed')).toBe(true);
     });
 
-    it('should maintain performance with multiple timers', () => {
+    it('should maintain performance with multiple timers', async () => {
       const durations = [30, 360, 1140, 1200];
       app.addQuickTimers(durations);
-      app.startAllTimers();
+      await app.startAllTimers();
 
       // Measure update performance
       const startTime = performance.now();
@@ -159,7 +159,7 @@ describe('Specific Use Case: Interview Practice Timers', () => {
   });
 
   describe('User Experience Validation', () => {
-    it('should provide clear visual feedback for each timer state', () => {
+    it('should provide clear visual feedback for each timer state', async () => {
       app.addQuickTimers([30, 60]);
 
       // Ready state
@@ -167,7 +167,7 @@ describe('Specific Use Case: Interview Practice Timers', () => {
       expect(app.timers[0].remainingTime).toBe(30);
 
       // Running state
-      app.startAllTimers();
+      await app.startAllTimers();
       expect(app.timers[0].status).toBe('running');
 
       // Completed state
@@ -177,9 +177,9 @@ describe('Specific Use Case: Interview Practice Timers', () => {
       expect(app.timers[0].remainingTime).toBe(0);
     });
 
-    it('should allow individual timer control during session', () => {
+    it('should allow individual timer control during session', async () => {
       app.addQuickTimers([30, 60, 90]);
-      app.startAllTimers();
+      await app.startAllTimers();
 
       // Pause middle timer
       app.toggleTimer(app.timers[1].id);
@@ -201,9 +201,9 @@ describe('Specific Use Case: Interview Practice Timers', () => {
       expect(app.timers[2].remainingTime).toBe(80); // 90 - 10
     });
 
-    it('should allow reset and restart during session', () => {
+    it('should allow reset and restart during session', async () => {
       app.addQuickTimers([30, 60]);
-      app.startAllTimers();
+      await app.startAllTimers();
 
       // Advance time
       vi.advanceTimersByTime(15000);
@@ -223,13 +223,13 @@ describe('Specific Use Case: Interview Practice Timers', () => {
       expect(app.timers[1].remainingTime).toBe(60);
 
       // Should be able to start again
-      app.startAllTimers();
+      await app.startAllTimers();
       expect(app.timers.every((t) => t.status === 'running')).toBe(true);
     });
 
-    it('should handle settings changes during session', () => {
+    it('should handle settings changes during session', async () => {
       app.addQuickTimers([30]);
-      app.startAllTimers();
+      await app.startAllTimers();
 
       // Disable audio
       app.settings.audioEnabled = false;
@@ -246,7 +246,7 @@ describe('Specific Use Case: Interview Practice Timers', () => {
       // Re-enable audio
       app.settings.audioEnabled = true;
       app.resetAllTimers();
-      app.startAllTimers();
+      await app.startAllTimers();
 
       // Complete again
       vi.advanceTimersByTime(30000);
@@ -259,7 +259,7 @@ describe('Specific Use Case: Interview Practice Timers', () => {
   });
 
   describe('Edge Cases and Error Scenarios', () => {
-    it('should handle rapid timer additions and removals', () => {
+    it('should handle rapid timer additions and removals', async () => {
       // Add timers
       app.addQuickTimers([30, 60]);
       expect(app.timers).toHaveLength(2);
@@ -273,13 +273,13 @@ describe('Specific Use Case: Interview Practice Timers', () => {
       expect(app.timers).toHaveLength(3);
 
       // Start all
-      app.startAllTimers();
+      await app.startAllTimers();
       expect(app.timers.every((t) => t.status === 'running')).toBe(true);
     });
 
-    it('should handle timer completion during rapid operations', () => {
+    it('should handle timer completion during rapid operations', async () => {
       app.addQuickTimers([1, 2, 3]); // Very short timers for testing
-      app.startAllTimers();
+      await app.startAllTimers();
 
       // Advance time to complete first timer
       vi.advanceTimersByTime(1000);
@@ -292,9 +292,9 @@ describe('Specific Use Case: Interview Practice Timers', () => {
       expect(app.timers[1].status).toBe('paused');
     });
 
-    it('should maintain accuracy over long periods', () => {
+    it('should maintain accuracy over long periods', async () => {
       app.addQuickTimers([1200]); // 20 minutes
-      app.startAllTimers();
+      await app.startAllTimers();
 
       // Advance by exactly 20 minutes
       vi.advanceTimersByTime(1200000); // 20 * 60 * 1000 ms

@@ -118,10 +118,13 @@ section h2 {
 
 .form-actions {
   margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .form-actions button {
-  width: 100%;
+  flex: 1;
   padding: 0.75rem 1.5rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -133,6 +136,10 @@ section h2 {
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
+}
+
+.form-actions .toggle-container {
+  flex-shrink: 0;
 }
 
 .form-actions button:hover:not(:disabled) {
@@ -178,6 +185,7 @@ section h2 {
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .timer-controls button {
@@ -189,16 +197,6 @@ section h2 {
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 120px;
-}
-
-.start-all-btn {
-  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-  color: white;
-}
-
-.start-all-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
 }
 
 .reset-all-btn {
@@ -215,6 +213,98 @@ section h2 {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+/* Toggle Switch Styles */
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.toggle-switch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-switch input[type='checkbox'] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 60px;
+  height: 32px;
+  background: #cbd5e0;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 28px;
+  height: 28px;
+  background: white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.1),
+    0 0 0 3px rgba(72, 187, 120, 0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(28px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-switch input:disabled + .toggle-slider {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.toggle-switch input:disabled + .toggle-slider::before {
+  opacity: 0.6;
+}
+
+.toggle-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #4a5568;
+  transition: color 0.3s ease;
+  min-width: 80px;
+  text-align: center;
+}
+
+.toggle-switch input:checked ~ .toggle-label {
+  color: #48bb78;
+}
+
+.toggle-switch input:disabled ~ .toggle-label {
+  color: #a0aec0;
+}
+
+.toggle-switch:hover:not(:has(input:disabled)) .toggle-slider {
+  transform: scale(1.05);
+}
+
+.toggle-switch:hover:not(:has(input:disabled)) .toggle-label {
+  color: #2d3748;
 }
 
 /* Timer List */
@@ -293,6 +383,29 @@ section h2 {
   font-family: 'Courier New', monospace;
   margin-bottom: 0.25rem;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.timer-minutes,
+.timer-seconds {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.25rem;
+  border-radius: 4px;
+}
+
+.timer-minutes:hover,
+.timer-seconds:hover {
+  background: rgba(102, 126, 234, 0.1);
+  transform: scale(1.05);
+}
+
+.timer-separator {
+  user-select: none;
+  margin: 0 0.125rem;
 }
 
 .timer-duration {
@@ -326,6 +439,7 @@ section h2 {
   display: flex;
   gap: 0.5rem;
   justify-content: center;
+  align-items: center;
 }
 
 .timer-controls button {
@@ -363,6 +477,85 @@ section h2 {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+/* Individual Timer Toggle Switch Styles */
+.timer-toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.timer-toggle-switch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.timer-toggle-switch input[type='checkbox'] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.timer-toggle-slider {
+  position: relative;
+  width: 50px;
+  height: 26px;
+  background: #cbd5e0;
+  border-radius: 13px;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.timer-toggle-slider::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  background: white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.timer-toggle-switch input:checked + .timer-toggle-slider {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.1),
+    0 0 0 2px rgba(72, 187, 120, 0.2);
+}
+
+.timer-toggle-switch input:checked + .timer-toggle-slider::before {
+  transform: translateX(24px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.timer-toggle-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4a5568;
+  transition: color 0.3s ease;
+  min-width: 60px;
+  text-align: center;
+}
+
+.timer-toggle-switch input:checked ~ .timer-toggle-label {
+  color: #48bb78;
+}
+
+.timer-toggle-switch:hover .timer-toggle-slider {
+  transform: scale(1.05);
+}
+
+.timer-toggle-switch:hover .timer-toggle-label {
+  color: #2d3748;
 }
 
 /* Quick Setup */
@@ -465,6 +658,16 @@ footer {
     font-size: 2.25rem;
   }
 
+  .timer-edit-minutes,
+  .timer-edit-seconds {
+    font-size: 1.75rem;
+    width: 2rem;
+  }
+
+  .timer-edit-separator {
+    font-size: 1.75rem;
+  }
+
   .timer-card {
     padding: 1rem;
   }
@@ -497,6 +700,35 @@ footer {
     min-width: auto;
   }
 
+  .timer-toggle-container {
+    justify-content: center;
+  }
+
+  .timer-toggle-switch {
+    flex-direction: column;
+    gap: 0.25rem;
+    text-align: center;
+  }
+
+  .timer-toggle-label {
+    min-width: auto;
+    font-size: 0.75rem;
+  }
+
+  .toggle-container {
+    justify-content: center;
+  }
+
+  .toggle-switch {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .toggle-label {
+    min-width: auto;
+  }
+
   .form-row {
     flex-direction: column;
     align-items: stretch;
@@ -525,6 +757,16 @@ footer {
     font-size: 2.5rem;
   }
 
+  .timer-edit-minutes,
+  .timer-edit-seconds {
+    font-size: 2rem;
+    width: 1.8rem;
+  }
+
+  .timer-edit-separator {
+    font-size: 2rem;
+  }
+
   .timer-card {
     padding: 1.5rem;
   }
@@ -539,10 +781,117 @@ footer {
   animation: slideIn 0.3s ease-out;
 }
 
+/* Timer editing styles */
+.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clickable:hover {
+  transform: scale(1.05);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.timer-display-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.timer-edit-mode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.timer-edit-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: white;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  padding: 0.75rem;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+  transition: all 0.2s ease;
+}
+
+.timer-edit-inputs:focus-within {
+  border-color: #5a67d8;
+  box-shadow:
+    0 0 0 3px rgba(102, 126, 234, 0.1),
+    0 4px 12px rgba(102, 126, 234, 0.3);
+  transform: scale(1.02);
+}
+
+.timer-edit-minutes,
+.timer-edit-seconds {
+  width: 2.5rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 2rem;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+  color: #2d3748;
+  outline: none;
+}
+
+.timer-edit-minutes:focus,
+.timer-edit-seconds:focus {
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 4px;
+}
+
+.timer-edit-minutes::placeholder,
+.timer-edit-seconds::placeholder {
+  color: #a0aec0;
+  font-weight: 400;
+}
+
+.timer-edit-separator {
+  font-size: 2rem;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  color: #2d3748;
+  margin: 0 0.25rem;
+  user-select: none;
+}
+
+.timer-edit-error {
+  color: #e53e3e;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0.25rem 0.5rem;
+  background: #fed7d7;
+  border-radius: 4px;
+  border-left: 3px solid #e53e3e;
+  max-width: 200px;
+  word-wrap: break-word;
+  min-height: 1.5rem; /* Reserve space for error message */
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Smooth transitions between normal and edit modes */
+.timer-display {
+  transition: all 0.3s ease;
+}
+
+.timer-edit-mode {
+  animation: slideIn 0.3s ease-out;
+}
+
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;

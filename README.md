@@ -105,12 +105,20 @@ All timers will start together and alert you as each phase completes, helping yo
 multi-timer/
 ├── package.json        # npm/pnpm configuration with Vite
 ├── vite.config.js      # Vite configuration
+├── vitest.config.js    # Vitest unit testing configuration
+├── playwright.config.js # Playwright E2E testing configuration
+├── vercel.json         # Vercel deployment configuration
 ├── index.html          # Main application file with Alpine.js
 ├── src/                # Source files
 │   ├── main.js         # Application entry point
-│   ├── styles.css      # Styling and animations
+│   ├── style.css       # Styling and animations
 │   └── audio.js        # Audio manager utilities
+├── tests/              # Test files
+│   ├── *.test.js       # Unit tests (Vitest)
+│   └── *.spec.js       # E2E tests (Playwright)
 ├── dist/               # Production build output
+├── .github/            # GitHub Actions workflows
+│   └── workflows/      # CI/CD pipeline configuration
 ├── README.md           # This file
 └── docs/               # Documentation
     └── architecture/   # Architecture documents
@@ -122,13 +130,52 @@ multi-timer/
 - `npm run build` - Build optimized production bundle
 - `npm run preview` - Preview production build locally
 
+### Testing
+
+- `npm run test:unit` - Run unit tests with Vitest
+- `npm run test:unit:coverage` - Run unit tests with coverage report
+- `npm run test:e2e` - Run end-to-end tests with Playwright
+- `npm run test:e2e:ui` - Run E2E tests with Playwright UI
+- `npm run test` - Run all tests (unit + E2E)
+
+### Code Quality
+
+- `npm run lint` - Check code formatting with Prettier
+- `npm run lint:fix` - Fix code formatting issues
+
+## CI/CD Pipeline
+
+This project includes automated CI/CD pipelines using GitHub Actions:
+
+### Automated Testing
+
+- **Unit Tests**: Vitest with coverage reporting
+- **E2E Tests**: Playwright across multiple browsers and devices
+- **Linting**: Prettier code formatting checks
+- **Security**: Dependency vulnerability scanning
+
+### Automated Deployment
+
+- **Pull Requests**: Validation only (no deployment)
+- **Main Branch**: Full CI/CD pipeline with automatic deployment to Vercel
+
+### Pipeline Features
+
+- Intelligent caching for faster builds
+- Parallel job execution
+- Comprehensive test reporting
+- Security vulnerability scanning
+- Automated Vercel deployment
+
+For detailed information about the CI/CD setup, see [`.github/README.md`](.github/README.md).
+
 ## Deployment
 
 This is a static web application that can be deployed to any static hosting service:
 
+- **Vercel** (automated via CI/CD)
 - GitHub Pages
 - Netlify
-- Vercel
 - AWS S3 + CloudFront
 - Any web server serving static files
 
@@ -143,6 +190,14 @@ This is a static web application that can be deployed to any static hosting serv
 2. Upload the contents of the `dist/` folder to your hosting service.
 
 The Vite build process optimizes and bundles all assets for production deployment.
+
+### Vercel Deployment
+
+The project is configured for automatic deployment to Vercel:
+
+1. **Automatic**: Pushes to `main` branch trigger automatic deployment
+2. **Manual**: Use the Vercel CLI or dashboard for manual deployments
+3. **Configuration**: See `vercel.json` for deployment settings
 
 ## License
 

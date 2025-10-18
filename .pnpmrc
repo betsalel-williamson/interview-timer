@@ -1,0 +1,15 @@
+# Allow build scripts for dependencies in CI environments
+enable-pre-post-scripts=true
+
+# Allow specific build scripts that are needed for the project
+# esbuild is used by Vite for building
+# playwright browsers need to be installed
+enable-build-scripts=true
+
+# Security: only allow scripts from trusted packages
+# This allows esbuild (used by Vite) and playwright to run their build scripts
+allowed-scripts=build,postinstall,preinstall,install
+
+# Additional configuration for CI environments
+# This ensures that build scripts can run in GitHub Actions
+scripts-prepend-node-path=true

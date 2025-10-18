@@ -22,10 +22,11 @@
 
 ### Metronome Feature
 
-- **WHEN** I enable the metronome feature **THEN** I SHALL hear a subtle click sound every second only when timers are actively running
+- **WHEN** the metronome feature is enabled by default **THEN** I SHALL hear a subtle click sound every second only when timers are actively running
 - **WHEN** I disable the metronome feature **THEN** I SHALL stop hearing the metronome clicks
 - **WHEN** the metronome is active **THEN** I SHALL see a visual indicator showing the metronome is running
 - **WHEN** no timers are running **THEN** I SHALL not hear metronome clicks even when metronome is enabled
+- **WHEN** I start timers with metronome enabled **THEN** I SHALL hear an immediate metronome click without delay
 - **WHEN** a timer completes **THEN** I SHALL hear a distinct 2-second alert sound that is different from the metronome clicks
 - **WHEN** metronome fails to start **THEN** I SHALL see a clear error message explaining the issue
 

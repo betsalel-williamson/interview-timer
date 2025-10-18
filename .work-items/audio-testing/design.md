@@ -54,7 +54,7 @@ settings: {
   audioEnabled: true,
   flashEnabled: true,
   audioTestingEnabled: false,  // Audio testing feature
-  metronomeEnabled: false      // Metronome feature
+  metronomeEnabled: true       // Metronome feature (enabled by default)
 }
 ```
 

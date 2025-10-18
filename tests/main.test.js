@@ -23,7 +23,7 @@ vi.mock('./audio.js', () => ({
 }));
 
 // Import after mocking
-import { multiTimerApp, createTimer, audioManager } from './main.js';
+import { multiTimerApp, createTimer, audioManager } from '../src/main.js';
 
 describe('Multi-Timer Application', () => {
   let app;
@@ -66,6 +66,7 @@ describe('Multi-Timer Application', () => {
         flashEnabled: true,
         audioTestingEnabled: false,
         metronomeEnabled: true,
+        autoStartNewTimers: false,
       });
       expect(app.intervalId).toBeNull();
       expect(app.isInitialized).toBe(false);
@@ -184,6 +185,29 @@ describe('Multi-Timer Application', () => {
 
       expect(setIntervalSpy).toHaveBeenCalled();
     });
+
+    it('should auto-start timer when autoStartNewTimers is enabled', async () => {
+      app.settings.autoStartNewTimers = true;
+      app.newTimer = { minutes: 1, seconds: 0 };
+
+      await app.addTimer();
+
+      expect(app.timers).toHaveLength(1);
+      expect(app.timers[0].status).toBe('running');
+      expect(app.timers[0].startTime).toBeDefined();
+      expect(app.timers[0].pausedTime).toBe(0);
+    });
+
+    it('should not auto-start timer when autoStartNewTimers is disabled', async () => {
+      app.settings.autoStartNewTimers = false;
+      app.newTimer = { minutes: 1, seconds: 0 };
+
+      await app.addTimer();
+
+      expect(app.timers).toHaveLength(1);
+      expect(app.timers[0].status).toBe('ready');
+      expect(app.timers[0].startTime).toBeNull();
+    });
   });
 
   describe('addQuickTimers', () => {
@@ -238,10 +262,10 @@ describe('Multi-Timer Application', () => {
       expect(app.canStartAll()).toBe(false);
     });
 
-    it('should start all ready timers', () => {
+    it('should start all ready timers', async () => {
       const now = Date.now();
 
-      app.startAllTimers();
+      await app.startAllTimers();
 
       expect(app.timers[0].status).toBe('running');
       expect(app.timers[0].startTime).toBe(now);
@@ -250,20 +274,20 @@ describe('Multi-Timer Application', () => {
       expect(setIntervalSpy).toHaveBeenCalled();
     });
 
-    it('should not start already running timers', () => {
+    it('should not start already running timers', async () => {
       app.timers[0].status = 'running';
       app.timers[0].startTime = 1000;
 
-      app.startAllTimers();
+      await app.startAllTimers();
 
       expect(app.timers[0].startTime).toBe(1000); // Should not change
       expect(app.timers[1].status).toBe('running'); // Should start the ready one
     });
 
-    it('should toggle timer from ready to running', () => {
+    it('should toggle timer from ready to running', async () => {
       const now = Date.now();
 
-      app.toggleTimer(1);
+      await app.toggleTimer(1);
 
       expect(app.timers[0].status).toBe('running');
       expect(app.timers[0].startTime).toBe(now);
@@ -716,6 +740,50 @@ describe('Multi-Timer Application', () => {
       expect(app.timers[0].duration).toBe(90); // 1:30 = 90 seconds
       expect(app.timers[0].isEditing).toBe(false);
     });
+
+    it('should have handleTabKey method for tab navigation', () => {
+      expect(typeof app.handleTabKey).toBe('function');
+    });
+
+    it('should have handleBlur method for blur events', () => {
+      expect(typeof app.handleBlur).toBe('function');
+    });
+
+    it('should handle tab key to switch between minutes and seconds', () => {
+      app.startEditTimer(1);
+
+      // Mock event object
+      const mockEvent = {
+        preventDefault: vi.fn(),
+      };
+
+      // Test tab from minutes to seconds
+      app.handleTabKey(1, 'minutes', mockEvent);
+      expect(mockEvent.preventDefault).toHaveBeenCalled();
+
+      // Test tab from seconds to minutes
+      app.handleTabKey(1, 'seconds', mockEvent);
+      expect(mockEvent.preventDefault).toHaveBeenCalled();
+    });
+
+    it('should handle blur event to save edit when not moving to other input', () => {
+      app.startEditTimer(1);
+      app.timers[0].editMinutes = '02';
+      app.timers[0].editSeconds = '15';
+
+      // Mock blur event that's not moving to other input
+      const mockEvent = {
+        relatedTarget: null,
+      };
+
+      app.handleBlur(1, 'minutes', mockEvent);
+
+      // Should save the edit after timeout
+      setTimeout(() => {
+        expect(app.timers[0].duration).toBe(135); // 2:15 = 135 seconds
+        expect(app.timers[0].isEditing).toBe(false);
+      }, 150);
+    });
   });
 
   describe('audio testing state management', () => {
@@ -868,7 +936,7 @@ describe('Multi-Timer Application', () => {
       app.timers = [{ id: 1, status: 'ready', duration: 60 }];
 
       // Start the timer
-      app.startAllTimers();
+      await app.startAllTimers();
 
       expect(playMetronomeClickSpy).toHaveBeenCalled();
     });
@@ -887,16 +955,15 @@ describe('Multi-Timer Application', () => {
       app.timers = [{ id: 1, status: 'ready', duration: 60 }];
 
       // Start the timer
-      app.startAllTimers();
+      await app.startAllTimers();
 
       expect(playMetronomeClickSpy).not.toHaveBeenCalled();
     });
 
     it('should play immediate metronome click when toggling individual timer', async () => {
-      const playMetronomeClickSpy = vi.spyOn(
-        audioManager,
-        'playMetronomeClick'
-      );
+      const playMetronomeClickSpy = vi
+        .spyOn(audioManager, 'playMetronomeClick')
+        .mockResolvedValue();
 
       // Enable metronome
       app.metronomeActive = true;
@@ -907,7 +974,7 @@ describe('Multi-Timer Application', () => {
       app.timers = [timer];
 
       // Toggle the timer to start it
-      app.toggleTimer(1);
+      await app.toggleTimer(1);
 
       expect(playMetronomeClickSpy).toHaveBeenCalled();
     });

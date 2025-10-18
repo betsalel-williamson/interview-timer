@@ -38,10 +38,12 @@ class AudioManager {
   }
 
   /**
-   * Play a distinct 2-second alert sound when timer completes
+   * Play a subtle, calm chirp sound when timer completes
    */
   async playAlert() {
     if (!this.isEnabled || !this.isInitialized) return;
+
+    console.log(`[AUDIO] playAlert called at ${new Date().toISOString()}`);
 
     try {
       // Ensure context is running
@@ -49,7 +51,7 @@ class AudioManager {
         await this.audioContext.resume();
       }
 
-      // Create oscillator for the distinct timer completion alert
+      // Create oscillator for the calm timer completion chirp
       const oscillator = this.audioContext.createOscillator();
       const gainNode = this.audioContext.createGain();
 
@@ -57,44 +59,33 @@ class AudioManager {
       oscillator.connect(gainNode);
       gainNode.connect(this.audioContext.destination);
 
-      // Configure oscillator (distinct ascending tone pattern)
-      oscillator.frequency.setValueAtTime(600, this.audioContext.currentTime);
-      oscillator.frequency.setValueAtTime(
-        800,
-        this.audioContext.currentTime + 0.4
-      );
-      oscillator.frequency.setValueAtTime(
-        1000,
-        this.audioContext.currentTime + 0.8
-      );
-      oscillator.frequency.setValueAtTime(
-        1200,
-        this.audioContext.currentTime + 1.2
-      );
-      oscillator.frequency.setValueAtTime(
-        1000,
-        this.audioContext.currentTime + 1.6
-      );
-      oscillator.frequency.setValueAtTime(
+      // Configure oscillator (gentle, bird-like chirp pattern)
+      oscillator.type = 'sine'; // Softer, more natural sound
+      oscillator.frequency.setValueAtTime(400, this.audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(
         600,
-        this.audioContext.currentTime + 2.0
+        this.audioContext.currentTime + 0.15
+      );
+      oscillator.frequency.exponentialRampToValueAtTime(
+        500,
+        this.audioContext.currentTime + 0.3
       );
 
-      // Configure gain (volume envelope with emphasis)
+      // Configure gain (very gentle volume envelope)
       gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
       gainNode.gain.linearRampToValueAtTime(
-        0.4,
-        this.audioContext.currentTime + 0.1
+        0.08, // Much lower volume for subtlety
+        this.audioContext.currentTime + 0.05
       );
-      gainNode.gain.setValueAtTime(0.4, this.audioContext.currentTime + 1.9);
+      gainNode.gain.setValueAtTime(0.08, this.audioContext.currentTime + 0.25);
       gainNode.gain.linearRampToValueAtTime(
         0,
-        this.audioContext.currentTime + 2.0
+        this.audioContext.currentTime + 0.35
       );
 
-      // Start and stop the sound
+      // Start and stop the sound (shorter duration)
       oscillator.start(this.audioContext.currentTime);
-      oscillator.stop(this.audioContext.currentTime + 2.0);
+      oscillator.stop(this.audioContext.currentTime + 0.35);
     } catch (error) {
       console.error('Failed to play alert sound:', error);
     }
@@ -197,6 +188,10 @@ class AudioManager {
   async playMetronomeClick() {
     if (!this.isEnabled || !this.isInitialized) return;
 
+    console.log(
+      `[AUDIO] playMetronomeClick called at ${new Date().toISOString()}`
+    );
+
     try {
       // Ensure context is running
       if (this.audioContext.state === 'suspended') {
@@ -241,6 +236,8 @@ class AudioManager {
   async startMetronome(hasActiveTimers) {
     if (this.metronomeIntervalId) return; // Already running
 
+    console.log(`[AUDIO] startMetronome called at ${new Date().toISOString()}`);
+
     // Ensure audio is initialized
     if (!this.isInitialized) {
       await this.initialize();
@@ -255,14 +252,26 @@ class AudioManager {
 
     // Play initial click if timers are active
     if (this.hasActiveTimers && this.hasActiveTimers()) {
+      console.log(
+        `[AUDIO] Playing initial metronome click - timers are active`
+      );
       await this.playMetronomeClick();
+    } else {
+      console.log(
+        `[AUDIO] Skipping initial metronome click - no active timers`
+      );
     }
 
     // Set up interval for subsequent clicks
     this.metronomeIntervalId = setInterval(async () => {
       // Only play metronome click if timers are active
       if (this.hasActiveTimers && this.hasActiveTimers()) {
+        console.log(`[AUDIO] Metronome interval tick - timers are active`);
         await this.playMetronomeClick();
+      } else {
+        console.log(
+          `[AUDIO] Metronome interval tick - no active timers, skipping`
+        );
       }
     }, 1000);
   }

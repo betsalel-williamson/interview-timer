@@ -26,7 +26,7 @@ global.AudioContext = vi.fn().mockImplementation(() => ({
   currentTime: 0,
   state: 'running',
   resume: vi.fn().mockResolvedValue(),
-  close: vi.fn(),
+  close: vi.fn().mockResolvedValue(),
 }));
 
 global.webkitAudioContext = global.AudioContext;
@@ -42,3 +42,6 @@ global.console = {
   warn: vi.fn(),
   error: vi.fn(),
 };
+
+// No need to mock the audio manager - use the actual implementation
+// The Web Audio API is already mocked above, which is sufficient

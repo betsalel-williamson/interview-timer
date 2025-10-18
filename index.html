@@ -19,13 +19,18 @@
           <div class="timer-controls-header">
             <h2>Active Timers</h2>
             <div class="timer-controls">
-              <button
-                x-on:click="startAllTimers()"
-                :disabled="!canStartAll()"
-                class="start-all-btn"
-              >
-                Start All Timers
-              </button>
+              <div class="toggle-container">
+                <label class="toggle-switch">
+                  <input
+                    type="checkbox"
+                    :checked="hasRunningTimers()"
+                    x-on:change="handleToggleChange()"
+                    :disabled="isStartStopAllButtonDisabled()"
+                  />
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-label" x-text="getToggleLabel()"></span>
+                </label>
+              </div>
               <button x-on:click="resetAllTimers()" class="reset-all-btn">
                 Reset All
               </button>
@@ -35,6 +40,7 @@
             <template x-for="timer in timers" :key="timer.id">
               <div
                 class="timer-card"
+                :data-timer-id="timer.id"
                 :class="{
                   'timer-running': timer.status === 'running',
                   'timer-completed': timer.status === 'completed',
@@ -42,22 +48,98 @@
                 }"
               >
                 <div class="timer-display">
-                  <div
-                    class="timer-time"
-                    x-text="formatTime(timer.remainingTime)"
-                  ></div>
-                  <div
-                    class="timer-duration"
-                    x-text="`of ${formatTime(timer.duration)}`"
-                  ></div>
+                  <!-- Normal display mode -->
+                  <template x-if="!timer.isEditing">
+                    <div class="timer-display-content">
+                      <div
+                        class="timer-time clickable"
+                        title="Click to edit duration"
+                      >
+                        <span
+                          class="timer-minutes clickable"
+                          x-text="formatTime(timer.remainingTime).split(':')[0]"
+                          x-on:click="startEditTimer(timer.id, 'minutes')"
+                          title="Click to edit minutes"
+                        ></span>
+                        <span class="timer-separator">:</span>
+                        <span
+                          class="timer-seconds clickable"
+                          x-text="formatTime(timer.remainingTime).split(':')[1]"
+                          x-on:click="startEditTimer(timer.id, 'seconds')"
+                          title="Click to edit seconds"
+                        ></span>
+                      </div>
+                      <div
+                        class="timer-duration"
+                        x-text="`of ${formatTime(timer.duration)}`"
+                      ></div>
+                    </div>
+                  </template>
+
+                  <!-- Edit mode -->
+                  <template x-if="timer.isEditing">
+                    <div class="timer-display-content timer-edit-mode">
+                      <div class="timer-edit-inputs">
+                        <input
+                          type="text"
+                          class="timer-edit-minutes"
+                          x-model="timer.editMinutes"
+                          x-on:keydown.enter="saveEditTimer(timer.id)"
+                          x-on:keydown.escape="cancelEditTimer(timer.id)"
+                          x-on:keydown.tab="handleTabKey(timer.id, 'minutes', $event)"
+                          x-on:input="handleMinutesInput(timer.id, $event)"
+                          x-on:blur="handleBlur(timer.id, 'minutes', $event)"
+                          x-on:click="focusMinutes(timer.id)"
+                          placeholder="MM"
+                          maxlength="2"
+                          pattern="[0-9]*"
+                          inputmode="numeric"
+                        />
+                        <span class="timer-edit-separator">:</span>
+                        <input
+                          type="text"
+                          class="timer-edit-seconds"
+                          x-model="timer.editSeconds"
+                          x-on:keydown.enter="saveEditTimer(timer.id)"
+                          x-on:keydown.escape="cancelEditTimer(timer.id)"
+                          x-on:keydown.tab="handleTabKey(timer.id, 'seconds', $event)"
+                          x-on:input="handleSecondsInput(timer.id, $event)"
+                          x-on:blur="handleBlur(timer.id, 'seconds', $event)"
+                          x-on:click="focusSeconds(timer.id)"
+                          placeholder="SS"
+                          maxlength="2"
+                          pattern="[0-9]*"
+                          inputmode="numeric"
+                        />
+                      </div>
+                      <div
+                        class="timer-duration"
+                        x-text="`of ${formatTime(timer.duration)}`"
+                      ></div>
+                      <div
+                        x-show="timer.editError"
+                        class="timer-edit-error"
+                        x-text="timer.editError"
+                      ></div>
+                    </div>
+                  </template>
                 </div>
                 <div class="timer-status" x-text="timer.status"></div>
                 <div class="timer-controls">
-                  <button
-                    x-on:click="toggleTimer(timer.id)"
-                    x-text="timer.status === 'running' ? 'Pause' : 'Start'"
-                    :disabled="timer.status === 'completed'"
-                  ></button>
+                  <div class="timer-toggle-container">
+                    <label class="timer-toggle-switch">
+                      <input
+                        type="checkbox"
+                        :checked="timer.status === 'running'"
+                        x-on:change="toggleTimer(timer.id)"
+                      />
+                      <span class="timer-toggle-slider"></span>
+                      <span
+                        class="timer-toggle-label"
+                        x-text="getTimerButtonText(timer.status)"
+                      ></span>
+                    </label>
+                  </div>
                   <button x-on:click="removeTimer(timer.id)" class="remove-btn">
                     Remove
                   </button>
@@ -115,6 +197,16 @@
                 <button type="submit" :disabled="!isValidTimer()">
                   Add Timer
                 </button>
+                <div class="toggle-container">
+                  <label class="toggle-switch">
+                    <input
+                      type="checkbox"
+                      x-model="settings.autoStartNewTimers"
+                    />
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">Auto-start</span>
+                  </label>
+                </div>
               </div>
             </div>
             <div
@@ -155,7 +247,7 @@
             <input
               type="checkbox"
               x-model="settings.metronomeEnabled"
-              x-on:change="settings.metronomeEnabled ? startMetronome() : stopMetronome()"
+              x-on:change="handleMetronomeToggle()"
             />
             Enable Metronome
             <span
