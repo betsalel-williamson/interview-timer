@@ -46,6 +46,7 @@ function multiTimerApp() {
     // Track if this is the initial load to prevent auto-starting metronome
     isInitialLoad: true,
     intervalId: null,
+    timerStartTime: null,
     audioTestingIntervalId: null,
     audioTestingActive: false,
     metronomeActive: false,
@@ -107,32 +108,66 @@ function multiTimerApp() {
       }
     },
 
-    // Start the main timer interval
+    // Schedule the next timer update based on system time
+    // This ensures all timer displays update simultaneously at second boundaries
+    scheduleNextTimerUpdate() {
+      if (!this.timerStartTime) return;
+
+      const now = Date.now();
+      const elapsed = now - this.timerStartTime;
+      const nextUpdateTime = Math.ceil(elapsed / 1000) * 1000;
+      const delay = nextUpdateTime - elapsed;
+
+      console.log(
+        `[TIMER] Scheduling next update in ${delay}ms (aligned to second boundary)`
+      );
+
+      this.intervalId = setTimeout(
+        () => {
+          this.updateTimers();
+
+          // Schedule the next update if there are still running timers
+          if (this.timers.some((timer) => timer.status === 'running')) {
+            this.scheduleNextTimerUpdate();
+          } else {
+            this.intervalId = null;
+          }
+        },
+        Math.max(0, delay)
+      );
+    },
+
+    // Start the main timer interval with system clock synchronization
     startTimerInterval() {
       if (this.intervalId) return;
 
-      this.intervalId = setInterval(() => {
-        this.updateTimers();
-      }, 100); // Update every 100ms for smooth countdown
+      // Record start time for system-time synchronization
+      this.timerStartTime = Date.now();
+
+      console.log(
+        `[TIMER] Starting synchronized timer updates at ${new Date().toISOString()}`
+      );
+
+      // Schedule the first update aligned to the next second boundary
+      this.scheduleNextTimerUpdate();
     },
 
     // Stop the main timer interval
     stopTimerInterval() {
       if (this.intervalId) {
-        clearInterval(this.intervalId);
+        clearTimeout(this.intervalId);
         this.intervalId = null;
       }
+      this.timerStartTime = null;
     },
 
     // Update all running timers
     updateTimers() {
       const now = Date.now();
-      let hasRunningTimers = false;
       let completedTimers = [];
 
       this.timers.forEach((timer) => {
         if (timer.status === 'running') {
-          hasRunningTimers = true;
           const elapsed = (now - timer.startTime) / 1000;
           timer.remainingTime = Math.max(
             0,
@@ -150,11 +185,6 @@ function multiTimerApp() {
       // Handle completed timers
       if (completedTimers.length > 0) {
         this.handleTimerCompletion(completedTimers);
-      }
-
-      // Stop interval if no timers are running
-      if (!hasRunningTimers && this.intervalId) {
-        this.stopTimerInterval();
       }
     },
 
@@ -387,8 +417,6 @@ function multiTimerApp() {
 
       if (startedCount > 0) {
         this.startTimerInterval();
-        // Play immediate metronome click if metronome is active
-        this.playImmediateMetronomeClick();
         console.log(`Started ${startedCount} timer(s)`);
       }
     },
@@ -442,8 +470,6 @@ function multiTimerApp() {
 
       if (resumedCount > 0) {
         this.startTimerInterval();
-        // Play immediate metronome click if metronome is active
-        this.playImmediateMetronomeClick();
         console.log(`Resumed ${resumedCount} timer(s)`);
       }
     },
@@ -462,8 +488,6 @@ function multiTimerApp() {
         timer.status = 'running';
         timer.startTime = now;
         this.startTimerInterval();
-        // Play immediate metronome click if metronome is active
-        this.playImmediateMetronomeClick();
         console.log(`Started timer ${timerId}`);
       } else if (timer.status === 'running') {
         timer.status = 'paused';
@@ -479,8 +503,6 @@ function multiTimerApp() {
         timer.startTime = now;
         timer.pausedTime = 0;
         this.startTimerInterval();
-        // Play immediate metronome click if metronome is active
-        this.playImmediateMetronomeClick();
         console.log(`Restarted timer ${timerId}`);
       }
     },
@@ -572,22 +594,6 @@ function multiTimerApp() {
         console.log('Metronome stopped');
       } catch (error) {
         console.error('Failed to stop metronome:', error);
-      }
-    },
-
-    // Play immediate metronome click when timers start
-    async playImmediateMetronomeClick() {
-      if (this.settings.metronomeEnabled) {
-        try {
-          // Start metronome if it's enabled but not active yet
-          if (!this.metronomeActive) {
-            await this.startMetronome();
-          }
-          // Play immediate click
-          await audioManager.playMetronomeClick();
-        } catch (error) {
-          console.error('Failed to play immediate metronome click:', error);
-        }
       }
     },
 

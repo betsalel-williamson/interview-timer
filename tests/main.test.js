@@ -28,28 +28,39 @@ import { multiTimerApp, createTimer, audioManager } from '../src/main.js';
 describe('Interview Timer Application', () => {
   let app;
   let mockIntervalId;
+  let mockTimeoutId;
   let setIntervalSpy;
   let clearIntervalSpy;
+  let setTimeoutSpy;
+  let clearTimeoutSpy;
 
   beforeEach(() => {
     // Mock Date.now for consistent timing
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2024-01-01T00:00:00Z'));
 
-    // Mock setInterval and clearInterval
+    // Mock setInterval, clearInterval, setTimeout, and clearTimeout
     mockIntervalId = 123;
+    mockTimeoutId = 456;
     setIntervalSpy = vi
       .spyOn(global, 'setInterval')
       .mockReturnValue(mockIntervalId);
     clearIntervalSpy = vi
       .spyOn(global, 'clearInterval')
       .mockImplementation(() => {});
+    setTimeoutSpy = vi
+      .spyOn(global, 'setTimeout')
+      .mockReturnValue(mockTimeoutId);
+    clearTimeoutSpy = vi
+      .spyOn(global, 'clearTimeout')
+      .mockImplementation(() => {});
 
     // Create fresh app instance
     app = multiTimerApp();
 
-    // Reset interval ID for each test
+    // Reset interval ID and timer start time for each test
     app.intervalId = null;
+    app.timerStartTime = null;
   });
 
   afterEach(() => {
@@ -76,7 +87,7 @@ describe('Interview Timer Application', () => {
       await app.init();
 
       expect(app.isInitialized).toBe(true);
-      expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 100);
+      expect(setTimeoutSpy).toHaveBeenCalled();
     });
   });
 
@@ -183,7 +194,7 @@ describe('Interview Timer Application', () => {
 
       await app.addTimer();
 
-      expect(setIntervalSpy).toHaveBeenCalled();
+      expect(setTimeoutSpy).toHaveBeenCalled();
     });
 
     it('should auto-start timer when autoStartNewTimers is enabled', async () => {
@@ -226,7 +237,7 @@ describe('Interview Timer Application', () => {
     it('should start interval when adding quick timers', () => {
       app.addQuickTimers([30]);
 
-      expect(setIntervalSpy).toHaveBeenCalled();
+      expect(setTimeoutSpy).toHaveBeenCalled();
     });
   });
 
@@ -271,7 +282,7 @@ describe('Interview Timer Application', () => {
       expect(app.timers[0].startTime).toBe(now);
       expect(app.timers[1].status).toBe('running');
       expect(app.timers[1].startTime).toBe(now);
-      expect(setIntervalSpy).toHaveBeenCalled();
+      expect(setTimeoutSpy).toHaveBeenCalled();
     });
 
     it('should not start already running timers', async () => {
@@ -291,6 +302,7 @@ describe('Interview Timer Application', () => {
 
       expect(app.timers[0].status).toBe('running');
       expect(app.timers[0].startTime).toBe(now);
+      expect(setTimeoutSpy).toHaveBeenCalled();
     });
 
     it('should toggle timer from running to paused', () => {
@@ -317,7 +329,7 @@ describe('Interview Timer Application', () => {
       app.timers[0].pausedTime = 10;
 
       // Set up the interval so it can be cleared
-      app.intervalId = mockIntervalId;
+      app.intervalId = mockTimeoutId;
 
       app.resetAllTimers();
 
@@ -325,13 +337,13 @@ describe('Interview Timer Application', () => {
       expect(app.timers[0].remainingTime).toBe(60);
       expect(app.timers[0].startTime).toBeNull();
       expect(app.timers[0].pausedTime).toBe(0);
-      expect(clearIntervalSpy).toHaveBeenCalledWith(mockIntervalId);
+      expect(clearTimeoutSpy).toHaveBeenCalledWith(mockTimeoutId);
     });
   });
 
   describe('timer updates', () => {
     beforeEach(() => {
-      app.intervalId = mockIntervalId;
+      app.intervalId = mockTimeoutId;
       app.timers = [
         {
           id: 1,
@@ -357,14 +369,6 @@ describe('Interview Timer Application', () => {
 
       expect(app.timers[0].status).toBe('completed');
       expect(app.timers[0].remainingTime).toBe(0);
-    });
-
-    it('should stop interval when no timers are running', () => {
-      app.timers[0].status = 'completed';
-
-      app.updateTimers();
-
-      expect(clearIntervalSpy).toHaveBeenCalledWith(mockIntervalId);
     });
 
     it('should not update paused timers', () => {
@@ -393,38 +397,182 @@ describe('Interview Timer Application', () => {
   });
 
   describe('interval management', () => {
-    it('should start timer interval', () => {
+    it('should start timer interval with system clock synchronization', () => {
       app.startTimerInterval();
 
-      expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 100);
-      expect(app.intervalId).toBe(mockIntervalId);
+      expect(setTimeoutSpy).toHaveBeenCalled();
+      expect(app.intervalId).toBe(mockTimeoutId);
+      expect(app.timerStartTime).toBeDefined();
     });
 
     it('should not start multiple intervals', () => {
-      app.intervalId = mockIntervalId;
+      app.intervalId = mockTimeoutId;
 
       app.startTimerInterval();
 
-      expect(setIntervalSpy).toHaveBeenCalledTimes(0); // Should not call again
+      expect(setTimeoutSpy).toHaveBeenCalledTimes(0); // Should not call again
     });
 
     it('should stop timer interval', () => {
-      app.intervalId = mockIntervalId;
+      app.intervalId = mockTimeoutId;
 
       app.stopTimerInterval();
 
-      expect(clearIntervalSpy).toHaveBeenCalledWith(mockIntervalId);
+      expect(clearTimeoutSpy).toHaveBeenCalledWith(mockTimeoutId);
       expect(app.intervalId).toBeNull();
+      expect(app.timerStartTime).toBeNull();
+    });
+  });
+
+  describe('synchronization behavior', () => {
+    it('should schedule timer updates aligned to second boundaries', () => {
+      // Set a specific time that's not aligned to second boundary
+      vi.setSystemTime(new Date('2024-01-01T00:00:00.500Z')); // 500ms past the second
+
+      // Set timer start time to the beginning of the second
+      app.timerStartTime = new Date('2024-01-01T00:00:00.000Z').getTime();
+
+      app.scheduleNextTimerUpdate();
+
+      // Should schedule the next update to align with the next second boundary
+      expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 500);
+    });
+
+    it('should calculate correct delay for system clock alignment', () => {
+      // Test different times to ensure correct delay calculation
+      const testCases = [
+        { time: '2024-01-01T00:00:00.100Z', expectedDelay: 900 }, // 900ms to next second
+        { time: '2024-01-01T00:00:00.500Z', expectedDelay: 500 }, // 500ms to next second
+        { time: '2024-01-01T00:00:00.999Z', expectedDelay: 1 }, // 1ms to next second
+        { time: '2024-01-01T00:00:00.000Z', expectedDelay: 0 }, // 0ms delay (immediate execution)
+      ];
+
+      testCases.forEach(({ time, expectedDelay }) => {
+        vi.setSystemTime(new Date(time));
+        // Set timer start time to the beginning of the second
+        app.timerStartTime = new Date('2024-01-01T00:00:00.000Z').getTime();
+
+        // Clear previous calls
+        setTimeoutSpy.mockClear();
+
+        app.scheduleNextTimerUpdate();
+
+        expect(setTimeoutSpy).toHaveBeenCalledWith(
+          expect.any(Function),
+          expectedDelay
+        );
+      });
+    });
+
+    it('should continue scheduling updates when timers are running', () => {
+      app.timerStartTime = Date.now();
+      app.timers = [
+        {
+          id: 1,
+          status: 'running',
+          duration: 60,
+          remainingTime: 60,
+          startTime: Date.now(),
+          pausedTime: 0,
+        },
+      ];
+
+      // Mock the updateTimers method to avoid side effects
+      const updateTimersSpy = vi
+        .spyOn(app, 'updateTimers')
+        .mockImplementation(() => {});
+
+      app.scheduleNextTimerUpdate();
+
+      // Should schedule another update since timer is running
+      expect(setTimeoutSpy).toHaveBeenCalled();
+
+      updateTimersSpy.mockRestore();
+    });
+
+    it('should stop scheduling updates when no timers are running', () => {
+      app.timerStartTime = Date.now();
+      app.timers = [
+        {
+          id: 1,
+          status: 'ready',
+          duration: 60,
+          remainingTime: 60,
+          startTime: null,
+          pausedTime: 0,
+        },
+      ];
+
+      // Mock the updateTimers method to avoid side effects
+      const updateTimersSpy = vi
+        .spyOn(app, 'updateTimers')
+        .mockImplementation(() => {});
+
+      app.scheduleNextTimerUpdate();
+
+      // Should schedule the first update
+      expect(setTimeoutSpy).toHaveBeenCalled();
+
+      // Execute the callback to test the stopping logic
+      const callback = setTimeoutSpy.mock.calls[0][0];
+      callback();
+
+      // Should not schedule another update since no timers are running
+      expect(app.intervalId).toBeNull();
+
+      updateTimersSpy.mockRestore();
+    });
+
+    it('should handle multiple timers synchronously', () => {
+      app.timerStartTime = Date.now();
+      app.timers = [
+        {
+          id: 1,
+          status: 'running',
+          duration: 60,
+          remainingTime: 60,
+          startTime: Date.now(),
+          pausedTime: 0,
+        },
+        {
+          id: 2,
+          status: 'running',
+          duration: 120,
+          remainingTime: 120,
+          startTime: Date.now(),
+          pausedTime: 0,
+        },
+        {
+          id: 3,
+          status: 'ready',
+          duration: 180,
+          remainingTime: 180,
+          startTime: null,
+          pausedTime: 0,
+        },
+      ];
+
+      // Mock the updateTimers method to avoid side effects
+      const updateTimersSpy = vi
+        .spyOn(app, 'updateTimers')
+        .mockImplementation(() => {});
+
+      app.scheduleNextTimerUpdate();
+
+      // Should schedule another update since there are running timers
+      expect(setTimeoutSpy).toHaveBeenCalled();
+
+      updateTimersSpy.mockRestore();
     });
   });
 
   describe('cleanup', () => {
     it('should clean up resources on destroy', () => {
-      app.intervalId = mockIntervalId;
+      app.intervalId = mockTimeoutId;
 
       app.destroy();
 
-      expect(clearIntervalSpy).toHaveBeenCalledWith(mockIntervalId);
+      expect(clearTimeoutSpy).toHaveBeenCalledWith(mockTimeoutId);
     });
   });
 
@@ -922,7 +1070,7 @@ describe('Interview Timer Application', () => {
       expect(hasActiveTimersFunction()).toBe(false);
     });
 
-    it('should play immediate metronome click when starting timers', async () => {
+    it('should not play immediate metronome click when starting timers (metronome handles its own timing)', async () => {
       const playMetronomeClickSpy = vi.spyOn(
         audioManager,
         'playMetronomeClick'
@@ -938,7 +1086,8 @@ describe('Interview Timer Application', () => {
       // Start the timer
       await app.startAllTimers();
 
-      expect(playMetronomeClickSpy).toHaveBeenCalled();
+      // Should not play immediate click - metronome handles its own synchronized timing
+      expect(playMetronomeClickSpy).not.toHaveBeenCalled();
     });
 
     it('should not play immediate metronome click when metronome is not active', async () => {
@@ -960,7 +1109,7 @@ describe('Interview Timer Application', () => {
       expect(playMetronomeClickSpy).not.toHaveBeenCalled();
     });
 
-    it('should play immediate metronome click when toggling individual timer', async () => {
+    it('should not play immediate metronome click when toggling individual timer (metronome handles its own timing)', async () => {
       const playMetronomeClickSpy = vi
         .spyOn(audioManager, 'playMetronomeClick')
         .mockResolvedValue();
@@ -976,7 +1125,8 @@ describe('Interview Timer Application', () => {
       // Toggle the timer to start it
       await app.toggleTimer(1);
 
-      expect(playMetronomeClickSpy).toHaveBeenCalled();
+      // Should not play immediate click - metronome handles its own synchronized timing
+      expect(playMetronomeClickSpy).not.toHaveBeenCalled();
     });
   });
 });

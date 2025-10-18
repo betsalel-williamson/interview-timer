@@ -619,7 +619,7 @@ describe('Interview Timer Integration Tests', () => {
       expect(stopClickTestingSpy).toHaveBeenCalled();
     });
 
-    it('should play immediate metronome click when starting timers with metronome enabled', async () => {
+    it('should not play immediate metronome click when starting timers (metronome handles its own timing)', async () => {
       const playMetronomeClickSpy = vi.spyOn(
         audioManager,
         'playMetronomeClick'
@@ -637,11 +637,8 @@ describe('Interview Timer Integration Tests', () => {
       app.addQuickTimers([5]); // 5 second timer
       await app.startAllTimers();
 
-      // Should have attempted to play immediate metronome click
-      // (may not be called if audio initialization failed, but that's OK for tests)
-      if (app.metronomeActive) {
-        expect(playMetronomeClickSpy).toHaveBeenCalled();
-      }
+      // Should not play immediate click - metronome handles its own synchronized timing
+      expect(playMetronomeClickSpy).not.toHaveBeenCalled();
     });
 
     it('should not play immediate metronome click when metronome is disabled', async () => {
