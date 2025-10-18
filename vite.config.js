@@ -36,4 +36,22 @@ export default defineConfig({
   css: {
     devSourcemap: true,
   },
+
+  // Test configuration (Vitest)
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./tests/setup.js'],
+    include: ['tests/**/*.test.js'], // Only include unit test files, exclude e2e tests
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'text-summary', 'html', 'lcov'],
+      exclude: ['node_modules/', 'tests/', '**/*.config.js', 'dist/'],
+      reportsDirectory: './coverage',
+    },
+    reporters: [
+      'default',
+      ['junit', { outputFile: 'unit-test-results/junit.xml' }],
+    ],
+  },
 });

@@ -112,7 +112,7 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
 
-      - name: Generate Coverage Summary
+      - name: Generate Coverage Report
         if: always()
         run: |
           echo "### Unit Test Coverage 📊" >> $GITHUB_STEP_SUMMARY
@@ -120,7 +120,7 @@ jobs:
           if [ -f "coverage/coverage-summary.txt" ]; then
             cat coverage/coverage-summary.txt >> $GITHUB_STEP_SUMMARY
           else
-            echo "Coverage summary not available" >> $GITHUB_STEP_SUMMARY
+            echo "Coverage report not available" >> $GITHUB_STEP_SUMMARY
           fi
           echo '```' >> $GITHUB_STEP_SUMMARY
 
