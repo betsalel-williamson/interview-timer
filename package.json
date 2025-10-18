@@ -35,6 +35,11 @@
   "engines": {
     "node": ">=18.0.0"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/your-username/multi-timer.git"
