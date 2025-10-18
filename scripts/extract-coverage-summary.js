@@ -26,22 +26,27 @@ try {
   // Extract both the detailed coverage report and summary
   const lines = logContent.split('\n');
 
-  // Find the detailed coverage report section
+  // Helper function to strip ANSI color codes
+  const stripAnsiCodes = (str) => str.replace(/\x1B\[[0-9;]*[mGKHF]/g, '');
+
+  // Find the detailed coverage report section (handle ANSI color codes)
   const reportStartIndex = lines.findIndex((line) =>
-    line.includes('Coverage report from v8')
+    stripAnsiCodes(line).includes('Coverage report from v8')
   );
   const summaryStartIndex = lines.findIndex((line) =>
-    line.includes('Coverage summary')
+    stripAnsiCodes(line).includes('Coverage summary')
   );
 
   if (reportStartIndex === -1) {
     console.error('Coverage report not found in output');
     console.error(
       'Available lines containing "Coverage":',
-      lines.filter((line) => line.includes('Coverage'))
+      lines.filter((line) => stripAnsiCodes(line).includes('Coverage'))
     );
     console.error('First 20 lines of output:');
-    lines.slice(0, 20).forEach((line, i) => console.error(`${i}: ${line}`));
+    lines
+      .slice(0, 20)
+      .forEach((line, i) => console.error(`${i}: ${stripAnsiCodes(line)}`));
     process.exit(1);
   }
 
@@ -49,12 +54,14 @@ try {
     console.error('Coverage summary not found in output');
     console.error(
       'Available lines containing "summary":',
-      lines.filter((line) => line.includes('summary'))
+      lines.filter((line) => stripAnsiCodes(line).includes('summary'))
     );
     console.error('Last 20 lines of output:');
     lines
       .slice(-20)
-      .forEach((line, i) => console.error(`${lines.length - 20 + i}: ${line}`));
+      .forEach((line, i) =>
+        console.error(`${lines.length - 20 + i}: ${stripAnsiCodes(line)}`)
+      );
     process.exit(1);
   }
 
@@ -62,20 +69,20 @@ try {
   const reportLines = [];
   let i = reportStartIndex;
 
-  // Include the header line
-  reportLines.push(lines[i]);
+  // Include the header line (strip ANSI codes)
+  reportLines.push(stripAnsiCodes(lines[i]));
   i++;
 
   // Include the separator line
   if (i < lines.length) {
-    reportLines.push(lines[i]);
+    reportLines.push(stripAnsiCodes(lines[i]));
     i++;
   }
 
   // Include all the file coverage lines until we hit the summary
   while (i < lines.length && i < summaryStartIndex) {
     if (lines[i].trim() !== '') {
-      reportLines.push(lines[i]);
+      reportLines.push(stripAnsiCodes(lines[i]));
     }
     i++;
   }
@@ -86,17 +93,17 @@ try {
 
   while (
     i < lines.length &&
-    !lines[i].includes(
+    !stripAnsiCodes(lines[i]).includes(
       '================================================================================'
     )
   ) {
-    summaryLines.push(lines[i]);
+    summaryLines.push(stripAnsiCodes(lines[i]));
     i++;
   }
 
   // Add the final line with the equals signs
   if (i < lines.length) {
-    summaryLines.push(lines[i]);
+    summaryLines.push(stripAnsiCodes(lines[i]));
   }
 
   // Combine both sections
