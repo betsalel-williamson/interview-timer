@@ -60,6 +60,30 @@ function multiTimerApp() {
 
       this.isInitialized = true;
       console.log('Interview Timer App initialized successfully');
+
+      // Set up a one-time listener to mark that initial load is complete
+      // after the first user interaction (only in browser environment)
+      if (typeof document !== 'undefined' && document.addEventListener) {
+        const markInitialLoadComplete = () => {
+          this.isInitialLoad = false;
+          document.removeEventListener('click', markInitialLoadComplete);
+          document.removeEventListener('keydown', markInitialLoadComplete);
+          document.removeEventListener('touchstart', markInitialLoadComplete);
+        };
+
+        document.addEventListener('click', markInitialLoadComplete, {
+          once: true,
+        });
+        document.addEventListener('keydown', markInitialLoadComplete, {
+          once: true,
+        });
+        document.addEventListener('touchstart', markInitialLoadComplete, {
+          once: true,
+        });
+      } else {
+        // In test environment, just set the flag immediately
+        this.isInitialLoad = false;
+      }
     },
 
     // Initialize audio on first user interaction
@@ -521,6 +545,11 @@ function multiTimerApp() {
           await audioManager.initialize();
         }
 
+        // Set up callback for when metronome stops automatically
+        audioManager.onMetronomeStop = () => {
+          this.metronomeActive = false;
+        };
+
         // Pass function to check if timers are running
         await audioManager.startMetronome(() => {
           return this.timers.some((timer) => timer.status === 'running');
@@ -564,12 +593,6 @@ function multiTimerApp() {
 
     // Handle metronome toggle with proper audio initialization
     async handleMetronomeToggle() {
-      // Don't auto-start metronome on initial page load
-      if (this.isInitialLoad) {
-        this.isInitialLoad = false;
-        return;
-      }
-
       if (this.settings.metronomeEnabled) {
         try {
           await this.startMetronome();
@@ -707,11 +730,10 @@ function multiTimerApp() {
         }
       };
 
-      if (this.$nextTick) {
-        this.$nextTick(focusInput);
-      } else {
-        setTimeout(focusInput, 0);
-      }
+      // Use requestAnimationFrame for better timing with DOM updates
+      requestAnimationFrame(() => {
+        requestAnimationFrame(focusInput);
+      });
     },
 
     focusSeconds(timerId) {
@@ -725,11 +747,10 @@ function multiTimerApp() {
         }
       };
 
-      if (this.$nextTick) {
-        this.$nextTick(focusInput);
-      } else {
-        setTimeout(focusInput, 0);
-      }
+      // Use requestAnimationFrame for better timing with DOM updates
+      requestAnimationFrame(() => {
+        requestAnimationFrame(focusInput);
+      });
     },
 
     // Format input values with leading zeros
@@ -807,10 +828,10 @@ function multiTimerApp() {
 
       // Only save if we're not moving to the other input field
       if (!isMovingToOtherInput) {
-        // Small delay to allow for tab navigation
-        setTimeout(() => {
+        // Use requestAnimationFrame for better timing
+        requestAnimationFrame(() => {
           this.saveEditTimer(timerId);
-        }, 100);
+        });
       }
     },
 

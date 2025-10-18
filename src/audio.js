@@ -9,7 +9,9 @@ class AudioManager {
     this.isInitialized = false;
     this.isEnabled = true;
     this.clickTestingIntervalId = null;
-    this.metronomeIntervalId = null;
+    this.metronomeTimeoutId = null;
+    this.metronomeStartTime = null;
+    this.metronomeBaseTime = null;
   }
 
   /**
@@ -230,11 +232,46 @@ class AudioManager {
   }
 
   /**
+   * Schedule the next metronome tick based on system time
+   * This ensures the metronome stays synchronized with actual time
+   */
+  scheduleNextMetronomeTick() {
+    if (!this.metronomeStartTime) return;
+
+    const now = Date.now();
+    const elapsed = now - this.metronomeStartTime;
+    const nextTickTime = Math.ceil(elapsed / 1000) * 1000;
+    const delay = nextTickTime - elapsed;
+
+    console.log(`[AUDIO] Scheduling next metronome tick in ${delay}ms`);
+
+    this.metronomeTimeoutId = setTimeout(
+      async () => {
+        // Only play metronome click if timers are active
+        if (this.hasActiveTimers && this.hasActiveTimers()) {
+          console.log(`[AUDIO] Metronome tick - timers are active`);
+          await this.playMetronomeClick();
+
+          // Schedule the next tick only if timers are still active
+          this.scheduleNextMetronomeTick();
+        } else {
+          console.log(
+            `[AUDIO] Metronome tick - no active timers, stopping metronome`
+          );
+          // Stop the metronome if no timers are active
+          this.stopMetronome();
+        }
+      },
+      Math.max(0, delay)
+    );
+  }
+
+  /**
    * Start metronome (subtle click every second)
    * @param {Function} hasActiveTimers - Function that returns true if timers are running
    */
   async startMetronome(hasActiveTimers) {
-    if (this.metronomeIntervalId) return; // Already running
+    if (this.metronomeTimeoutId) return; // Already running
 
     console.log(`[AUDIO] startMetronome called at ${new Date().toISOString()}`);
 
@@ -250,6 +287,9 @@ class AudioManager {
     // Store the function to check for active timers
     this.hasActiveTimers = hasActiveTimers;
 
+    // Record start time for system-time synchronization
+    this.metronomeStartTime = Date.now();
+
     // Play initial click if timers are active
     if (this.hasActiveTimers && this.hasActiveTimers()) {
       console.log(
@@ -262,27 +302,24 @@ class AudioManager {
       );
     }
 
-    // Set up interval for subsequent clicks
-    this.metronomeIntervalId = setInterval(async () => {
-      // Only play metronome click if timers are active
-      if (this.hasActiveTimers && this.hasActiveTimers()) {
-        console.log(`[AUDIO] Metronome interval tick - timers are active`);
-        await this.playMetronomeClick();
-      } else {
-        console.log(
-          `[AUDIO] Metronome interval tick - no active timers, skipping`
-        );
-      }
-    }, 1000);
+    // Start the system-time-synchronized metronome
+    this.scheduleNextMetronomeTick();
   }
 
   /**
    * Stop metronome
    */
   stopMetronome() {
-    if (this.metronomeIntervalId) {
-      clearInterval(this.metronomeIntervalId);
-      this.metronomeIntervalId = null;
+    if (this.metronomeTimeoutId) {
+      clearTimeout(this.metronomeTimeoutId);
+      this.metronomeTimeoutId = null;
+    }
+    this.metronomeStartTime = null;
+    this.metronomeBaseTime = null;
+
+    // Notify the main app that metronome has stopped
+    if (this.onMetronomeStop) {
+      this.onMetronomeStop();
     }
   }
 
