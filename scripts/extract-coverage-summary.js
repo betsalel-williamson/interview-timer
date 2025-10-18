@@ -8,11 +8,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 try {
-  // Read the coverage output log
-  const logPath = path.join(__dirname, '..', 'coverage-output.log');
+  // Get the log file path from command line arguments or use default
+  const logPath =
+    process.argv[2] || path.join(__dirname, '..', 'coverage-output.log');
+
+  console.log('Using log file path:', logPath);
 
   if (!fs.existsSync(logPath)) {
-    console.error('Coverage output log not found');
+    console.error('Coverage output log not found at:', logPath);
+    console.error('Current working directory:', process.cwd());
+    console.error('Files in current directory:', fs.readdirSync('.'));
     process.exit(1);
   }
 
@@ -23,14 +28,33 @@ try {
 
   // Find the detailed coverage report section
   const reportStartIndex = lines.findIndex((line) =>
-    line.includes('% Coverage report from v8')
+    line.includes('Coverage report from v8')
   );
   const summaryStartIndex = lines.findIndex((line) =>
     line.includes('Coverage summary')
   );
 
-  if (reportStartIndex === -1 || summaryStartIndex === -1) {
-    console.error('Coverage report or summary not found in output');
+  if (reportStartIndex === -1) {
+    console.error('Coverage report not found in output');
+    console.error(
+      'Available lines containing "Coverage":',
+      lines.filter((line) => line.includes('Coverage'))
+    );
+    console.error('First 20 lines of output:');
+    lines.slice(0, 20).forEach((line, i) => console.error(`${i}: ${line}`));
+    process.exit(1);
+  }
+
+  if (summaryStartIndex === -1) {
+    console.error('Coverage summary not found in output');
+    console.error(
+      'Available lines containing "summary":',
+      lines.filter((line) => line.includes('summary'))
+    );
+    console.error('Last 20 lines of output:');
+    lines
+      .slice(-20)
+      .forEach((line, i) => console.error(`${lines.length - 20 + i}: ${line}`));
     process.exit(1);
   }
 
