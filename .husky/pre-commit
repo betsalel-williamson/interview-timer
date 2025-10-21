@@ -18,5 +18,15 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+echo "🖼️ Optimizing PNG snapshots..."
+pnpm run optimize:snapshots
+if [ $? -ne 0 ]; then
+  echo "❌ PNG optimization failed."
+  exit 1
+fi
+
+echo "📦 Staging optimized snapshots..."
+git add tests/e2e/**/*.png
+
 echo "✅ All pre-commit checks passed!"
 

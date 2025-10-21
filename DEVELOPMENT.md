@@ -4,8 +4,9 @@ This document contains all development-related information for the Interview Tim
 
 ## Prerequisites
 
-- Node.js v18.0.0 or higher
+- Node.js v22.0.0 or higher (specified in `.nvmrc`)
 - pnpm (recommended) or npm
+- NVM (Node Version Manager) for Node.js version management
 
 ## Getting Started
 
@@ -18,7 +19,17 @@ This document contains all development-related information for the Interview Tim
    cd Interview Timer
    ```
 
-2. **Install dependencies:**
+2. **Set up Node.js version:**
+
+   If using NVM (recommended):
+
+   ```bash
+   nvm use
+   ```
+
+   This will automatically use the Node.js version specified in `.nvmrc` (v22).
+
+3. **Install dependencies:**
 
    ```bash
    pnpm install
@@ -26,7 +37,7 @@ This document contains all development-related information for the Interview Tim
    npm install
    ```
 
-3. **Start the development server:**
+4. **Start the development server:**
 
    ```bash
    pnpm dev
@@ -34,7 +45,7 @@ This document contains all development-related information for the Interview Tim
    npm run dev
    ```
 
-4. **Open your browser:**
+5. **Open your browser:**
    Navigate to `http://localhost:5173` to see the application.
 
 ### Building for Production
@@ -100,6 +111,28 @@ pnpm lint
 
 ```bash
 pnpm lint:fix
+```
+
+## Analytics Integration
+
+The application includes [Vercel Analytics](https://vercel.com/analytics) for web analytics tracking:
+
+- **Automatic Integration**: Analytics are automatically enabled when deployed to Vercel
+- **No Configuration Required**: The `@vercel/analytics` package is imported and initialized in `src/main.js`
+- **Privacy-Focused**: Vercel Analytics provides privacy-focused analytics without cookies
+- **Development**: Analytics are disabled in development mode automatically
+
+### Implementation Details
+
+The analytics integration is handled in `src/main.js`:
+
+```javascript
+import { inject } from '@vercel/analytics';
+
+// ... application code ...
+
+// Initialize analytics (disabled in development)
+inject();
 ```
 
 ## Architecture

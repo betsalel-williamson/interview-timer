@@ -76,6 +76,10 @@ Configure the following options in the footer:
 - **Audio Testing**: Test audio functionality with periodic clicks
 - **Metronome**: Enable subtle metronome clicks for timing practice
 
+## Analytics
+
+This application uses [Vercel Analytics](https://vercel.com/analytics) for built-in web analytics tracking. No additional analytics configuration is required - the analytics are automatically enabled when deployed to Vercel.
+
 ## Development
 
 For detailed development information including project structure, testing, architecture, and contributing guidelines, see [DEVELOPMENT.md](./DEVELOPMENT.md).

@@ -209,6 +209,34 @@ section h2 {
   box-shadow: 0 4px 12px rgba(237, 137, 54, 0.4);
 }
 
+.add-timer-btn {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+  min-width: auto;
+  padding: 0;
+}
+
+.add-timer-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+}
+
+.add-icon {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
 .timer-controls button:disabled {
   opacity: 0.6;
   cursor: not-allowed;

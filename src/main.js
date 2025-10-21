@@ -1,3 +1,4 @@
+import { inject } from '@vercel/analytics';
 import Alpine from 'alpinejs';
 import AudioManager from './audio.js';
 
@@ -872,3 +873,4 @@ export { multiTimerApp, audioManager };
 
 // Start Alpine.js
 Alpine.start();
+inject();

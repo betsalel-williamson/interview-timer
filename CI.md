@@ -42,6 +42,7 @@ This directory contains GitHub Actions workflows for automated testing, building
 - Deploys to Vercel production environment
 - Only runs on pushes to `main` branch
 - Requires Vercel secrets to be configured
+- Automatically enables Vercel Analytics for web analytics tracking
 
 #### Security Scan
 
@@ -59,6 +60,22 @@ This directory contains GitHub Actions workflows for automated testing, building
 - Quick validation for PRs (linting, unit tests, build)
 - Comments on PR with validation results
 - Faster feedback loop for contributors
+
+## Analytics Integration
+
+The application uses [Vercel Analytics](https://vercel.com/analytics) for web analytics:
+
+- **Automatic Setup**: Analytics are automatically enabled when deployed to Vercel
+- **Privacy-Focused**: No cookies required, GDPR compliant
+- **Development Mode**: Analytics are automatically disabled in development
+- **No Configuration**: The `@vercel/analytics` package handles everything automatically
+
+### Analytics Features
+
+- Page views and user interactions
+- Performance metrics
+- Error tracking
+- Real-time analytics dashboard in Vercel
 
 ## Required Secrets
 
@@ -94,7 +111,7 @@ VERCEL_PROJECT_ID=your_vercel_project_id
 
 The workflows use the following environment variables:
 
-- `NODE_VERSION`: '18' (Node.js version)
+- `NODE_VERSION`: '22' (Node.js version)
 - `PNPM_VERSION`: '8' (pnpm version)
 
 ## pnpm Configuration

@@ -218,64 +218,6 @@
             </button>
           </div>
         </section>
-
-        <!-- Timer Input Form - Moved to bottom -->
-        <section class="timer-form" data-testid="timer-form">
-          <h2>Add New Timer</h2>
-          <form x-on:submit.prevent="addTimer()">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="minutes">Minutes:</label>
-                <input
-                  type="number"
-                  id="minutes"
-                  data-testid="minutes-input"
-                  x-model="newTimer.minutes"
-                  min="0"
-                  max="59"
-                  placeholder="0"
-                />
-              </div>
-              <div class="form-group">
-                <label for="seconds">Seconds:</label>
-                <input
-                  type="number"
-                  id="seconds"
-                  data-testid="seconds-input"
-                  x-model="newTimer.seconds"
-                  min="0"
-                  max="59"
-                  placeholder="0"
-                />
-              </div>
-              <div class="form-actions">
-                <button
-                  type="submit"
-                  data-testid="add-timer-button"
-                  :disabled="!isValidTimer()"
-                >
-                  Add Timer
-                </button>
-                <div class="toggle-container">
-                  <label class="toggle-switch">
-                    <input
-                      type="checkbox"
-                      x-model="settings.autoStartNewTimers"
-                    />
-                    <span class="toggle-slider"></span>
-                    <span class="toggle-label">Auto-start</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div
-              x-show="formError"
-              class="error-message"
-              data-testid="form-error"
-              x-text="formError"
-            ></div>
-          </form>
-        </section>
       </main>
 
       <footer>

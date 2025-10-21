@@ -245,13 +245,16 @@ Interview Timer/
 - **Test Execution Performance**: Optimize test execution to not impact timer accuracy
 - **Resource Management**: Manage test execution resources efficiently
 
-### Monitoring
+### Observability and Monitoring
+
+The application includes built-in observability features:
 
 - **Console Logging**: Basic error logging for debugging
 - **User Feedback**: Clear error messages for invalid inputs
 - **Test Result Logging**: Comprehensive logging of test execution results
 - **Performance Metrics**: Monitor test execution times and resource usage
 - **Error Tracking**: Track and report test execution failures
+- **Web Analytics**: Uses Vercel Analytics for privacy-focused web analytics (automatically enabled in production)
 
 ### Maintenance
 
